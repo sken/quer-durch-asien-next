@@ -1,0 +1,336 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model captcha {
+  captcha_id   BigInt @unique(map: "idx_16393_PRIMARY") @default(autoincrement())
+  captcha_time BigInt
+  ip_address   String @default("0") @db.VarChar(16)
+  word         String @db.VarChar(20)
+
+  @@index([word], map: "idx_16393_word")
+}
+
+model color_to_image {
+  image_id BigInt
+  color_id BigInt
+
+  @@unique([image_id, color_id], map: "idx_16403_PRIMARY")
+}
+
+model colors {
+  id         BigInt @unique(map: "idx_16399_PRIMARY") @default(autoincrement())
+  hue        Int
+  saturation Int
+  value      Int
+  red        Int
+  green      Int
+  blue       Int
+  hex        String @db.VarChar(50)
+  websafe    String @db.VarChar(50)
+}
+
+model diary {
+  ID           BigInt    @unique(map: "idx_16407_PRIMARY") @default(autoincrement())
+  post_date    DateTime? @db.Timestamptz(6)
+  post_content String
+  post_title   String
+  post_name    String    @default("") @db.VarChar(200)
+}
+
+model galleries {
+  id         BigInt  @unique(map: "idx_16415_PRIMARY") @default(autoincrement())
+  name       String? @db.VarChar(255)
+  title      String? @db.VarChar(255)
+  galdesc    String? @db.VarChar(255)
+  previewpic BigInt?
+
+  @@index([id], map: "idx_16415_id_2")
+}
+
+model gpstrack {
+  id            BigInt @unique(map: "idx_16425_PRIMARY") @default(autoincrement())
+  data          String @default("") @db.VarChar(64)
+  utc           Int    @default(0)
+  lat           Float  @default(0)
+  ns            String @default("") @db.Char(1)
+  lon           Float  @default(0)
+  ew            String @default("") @db.Char(1)
+  altitude      Float  @default(0)
+  countrycode   String @default("") @db.VarChar(30)
+  geoidal       String @default("") @db.VarChar(64)
+  spd_over_grnd String @default("") @db.VarChar(64)
+  spdkmph       String @default("") @db.VarChar(64)
+  spdknts       String @default("") @db.VarChar(64)
+  deg_compass   String @default("") @db.VarChar(64)
+  magnetic_var  String @default("") @db.VarChar(64)
+  gps_quality   String @default("") @db.VarChar(64)
+  dgps          String @default("") @db.VarChar(64)
+  dgps_stat     String @default("") @db.VarChar(64)
+  hdp           String @default("") @db.VarChar(64)
+  pdop          String @default("") @db.VarChar(64)
+  hdop          String @default("") @db.VarChar(64)
+  vdop          String @default("") @db.VarChar(64)
+  sat1          String @default("") @db.VarChar(64)
+  sat2          String @default("") @db.VarChar(64)
+  sat3          String @default("") @db.VarChar(64)
+  sat4          String @default("") @db.VarChar(64)
+  sat5          String @default("") @db.VarChar(64)
+  sat6          String @default("") @db.VarChar(64)
+  sat7          String @default("") @db.VarChar(64)
+  sat8          String @default("") @db.VarChar(64)
+  sat9          String @default("") @db.VarChar(64)
+  sat10         String @default("") @db.VarChar(64)
+  sat11         String @default("") @db.VarChar(64)
+  sat12         String @default("") @db.VarChar(64)
+}
+
+model images {
+  id Int @id @default(autoincrement())
+
+  filename     String    @db.VarChar(255)
+  title        String?
+  title_number Int
+  desc         String?
+  country      String?
+  copyright    String?
+  commentson   Int       @default(1)
+  show         Int       @default(1)
+  date         DateTime? @db.Timestamptz(6)
+
+  height     Int? @map("height")
+  width      Int? @map("width")
+  thumb_x    Int? @map("thumbX")
+  thumb_y    Int? @map("thumbY")
+  thumb_w    Int? @map("thumbW")
+  thumb_h    Int? @map("thumbH")
+  mtime      Int? @map("mtime")
+  hitcounter Int? @default(0) @map("hitcounter")
+
+  EXIFValid             Int?
+  EXIFOrientation       String? @db.VarChar(52)
+  EXIFMake              String? @db.VarChar(52)
+  EXIFModel             String? @db.VarChar(52)
+  EXIFExposureTime      String? @db.VarChar(52)
+  EXIFFNumber           String? @db.VarChar(52)
+  EXIFFocalLength       String? @db.VarChar(52)
+  EXIFFocalLength35mm   String? @db.VarChar(52)
+  EXIFISOSpeedRatings   String? @db.VarChar(52)
+  EXIFDateTimeOriginal  String? @db.VarChar(52)
+  EXIFExposureBiasValue String? @db.VarChar(52)
+  EXIFMeteringMode      String? @db.VarChar(52)
+  EXIFFlash             String? @db.VarChar(52)
+  EXIFImageWidth        String? @db.VarChar(52)
+  EXIFImageHeight       String? @db.VarChar(52)
+  EXIFContrast          String? @db.VarChar(52)
+  EXIFSharpness         String? @db.VarChar(52)
+  EXIFSaturation        String? @db.VarChar(52)
+  EXIFWhiteBalance      String? @db.VarChar(52)
+  EXIFSubjectDistance   String? @db.VarChar(52)
+  EXIFGPSLatitude       String? @db.VarChar(52)
+  EXIFGPSLatitudeRef    String? @db.VarChar(52)
+  EXIFGPSLongitude      String? @db.VarChar(52)
+  EXIFGPSLongitudeRef   String? @db.VarChar(52)
+  EXIFGPSAltitude       String? @db.VarChar(52)
+  EXIFGPSAltitudeRef    String? @db.VarChar(52)
+
+  custom_data String?
+  hue         Int     @map("hue")
+  saturation  Int     @map("saturation")
+  value       Int     @map("value")
+  rgb         String  @db.VarChar(100)
+
+  created_on DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([filename], map: "idx_16465_filename")
+}
+
+model keyword_to_image {
+  image_id   BigInt
+  keyword_id BigInt
+
+  @@unique([image_id, keyword_id], map: "idx_16505_PRIMARY")
+  @@index([image_id], map: "idx_16505_image_id")
+  @@index([keyword_id], map: "idx_16505_keyword_id")
+}
+
+model keywords {
+  id   BigInt @unique(map: "idx_16501_PRIMARY") @default(autoincrement())
+  name String @db.VarChar(200)
+  slug String @db.VarChar(200)
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model wp_commentmeta {
+  meta_id    BigInt  @unique(map: "idx_16509_PRIMARY") @default(autoincrement())
+  comment_id Decimal @default(0) @db.Decimal
+  meta_key   String? @db.VarChar(255)
+  meta_value String?
+
+  @@index([comment_id], map: "idx_16509_comment_id")
+  @@index([meta_key], map: "idx_16509_meta_key")
+}
+
+model wp_comments {
+  comment_ID           BigInt    @unique(map: "idx_16518_PRIMARY") @default(autoincrement())
+  comment_post_ID      Decimal   @default(0) @db.Decimal
+  comment_author       String
+  comment_author_email String    @default("") @db.VarChar(100)
+  comment_author_url   String    @default("") @db.VarChar(200)
+  comment_author_IP    String    @default("") @db.VarChar(100)
+  comment_date         DateTime? @db.Timestamptz(6)
+  comment_date_gmt     DateTime? @db.Timestamptz(6)
+  comment_content      String
+  comment_karma        BigInt    @default(0)
+  comment_approved     String    @default("1") @db.VarChar(20)
+  comment_agent        String    @default("") @db.VarChar(255)
+  comment_type         String    @default("") @db.VarChar(20)
+  comment_parent       Decimal   @default(0) @db.Decimal
+  user_id              Decimal   @default(0) @db.Decimal
+
+  @@index([comment_approved], map: "idx_16518_comment_approved")
+  @@index([comment_approved, comment_date_gmt], map: "idx_16518_comment_approved_date_gmt")
+  @@index([comment_date_gmt], map: "idx_16518_comment_date_gmt")
+  @@index([comment_post_ID], map: "idx_16518_comment_post_ID")
+  @@index([comment_type], map: "idx_16518_comment_type")
+}
+
+model wp_links {
+  link_id          BigInt    @unique(map: "idx_16535_PRIMARY") @default(autoincrement())
+  link_url         String    @default("") @db.VarChar(255)
+  link_name        String    @default("") @db.VarChar(255)
+  link_image       String    @default("") @db.VarChar(255)
+  link_target      String    @default("") @db.VarChar(25)
+  link_description String    @default("") @db.VarChar(255)
+  link_visible     String    @default("Y") @db.VarChar(20)
+  link_owner       Decimal   @default(1) @db.Decimal
+  link_rating      BigInt    @default(0)
+  link_updated     DateTime? @db.Timestamptz(6)
+  link_rel         String    @default("") @db.VarChar(255)
+  link_notes       String
+  link_rss         String    @default("") @db.VarChar(255)
+
+  @@index([link_visible], map: "idx_16535_link_visible")
+}
+
+model wp_options {
+  option_id    BigInt @unique(map: "idx_16552_PRIMARY") @default(autoincrement())
+  blog_id      BigInt @default(0)
+  option_name  String @unique(map: "idx_16552_option_name") @default("") @db.VarChar(64)
+  option_value String
+  autoload     String @default("yes") @db.VarChar(20)
+
+  @@index([autoload], map: "idx_16552_autoload")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model wp_postmeta {
+  meta_id    BigInt  @unique(map: "idx_16562_PRIMARY") @default(autoincrement())
+  post_id    Decimal @default(0) @db.Decimal
+  meta_key   String? @db.VarChar(255)
+  meta_value String?
+
+  @@index([meta_key], map: "idx_16562_meta_key")
+  @@index([post_id], map: "idx_16562_post_id")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
+model wp_posts {
+  ID                    BigInt    @unique(map: "idx_16571_PRIMARY") @default(autoincrement())
+  post_author           Decimal   @default(0) @db.Decimal
+  post_date             DateTime? @db.Timestamptz(6)
+  post_date_gmt         DateTime? @db.Timestamptz(6)
+  post_content          String
+  post_title            String
+  post_excerpt          String
+  post_status           String    @default("publish") @db.VarChar(20)
+  comment_status        String    @default("open") @db.VarChar(20)
+  ping_status           String    @default("open") @db.VarChar(20)
+  post_password         String    @default("") @db.VarChar(20)
+  post_name             String    @default("") @db.VarChar(200)
+  to_ping               String
+  pinged                String
+  post_modified         DateTime? @db.Timestamptz(6)
+  post_modified_gmt     DateTime? @db.Timestamptz(6)
+  post_content_filtered String
+  post_parent           Decimal   @default(0) @db.Decimal
+  guid                  String    @default("") @db.VarChar(255)
+  menu_order            BigInt    @default(0)
+  post_type             String    @default("post") @db.VarChar(20)
+  post_mime_type        String    @default("") @db.VarChar(100)
+  comment_count         BigInt    @default(0)
+
+  @@index([menu_order], map: "idx_16571_menu_order")
+  @@index([post_date], map: "idx_16571_post_date")
+  @@index([post_date_gmt], map: "idx_16571_post_date_gmt")
+  @@index([post_mime_type], map: "idx_16571_post_mime_type")
+  @@index([post_modified], map: "idx_16571_post_modified")
+  @@index([post_modified_gmt], map: "idx_16571_post_modified_gmt")
+  @@index([post_name], map: "idx_16571_post_name")
+  @@index([post_parent], map: "idx_16571_post_parent")
+  @@index([post_password], map: "idx_16571_post_password")
+  @@index([post_status], map: "idx_16571_post_status")
+  @@index([post_type, post_status, post_date, ID], map: "idx_16571_type_status_date")
+}
+
+model wp_term_relationships {
+  object_id        Decimal @default(0) @db.Decimal
+  term_taxonomy_id Decimal @default(0) @db.Decimal
+  term_order       BigInt  @default(0)
+
+  @@unique([object_id, term_taxonomy_id], map: "idx_16597_PRIMARY")
+  @@index([term_taxonomy_id], map: "idx_16597_term_taxonomy_id")
+}
+
+model wp_term_taxonomy {
+  term_taxonomy_id BigInt  @unique(map: "idx_16606_PRIMARY") @default(autoincrement())
+  term_id          Decimal @default(0) @db.Decimal
+  taxonomy         String  @default("") @db.VarChar(32)
+  description      String
+  parent           Decimal @default(0) @db.Decimal
+  count            BigInt  @default(0)
+
+  @@unique([term_id, taxonomy], map: "idx_16606_term_id_taxonomy")
+  @@index([count], map: "idx_16606_count")
+  @@index([taxonomy], map: "idx_16606_taxonomy")
+}
+
+model wp_terms {
+  term_id    BigInt @unique(map: "idx_16590_PRIMARY") @default(autoincrement())
+  name       String @default("") @db.VarChar(200)
+  slug       String @unique(map: "idx_16590_slug") @default("") @db.VarChar(200)
+  term_group BigInt @default(0)
+
+  @@index([name], map: "idx_16590_name")
+}
+
+model wp_usermeta {
+  umeta_id   BigInt  @unique(map: "idx_16617_PRIMARY") @default(autoincrement())
+  user_id    Decimal @default(0) @db.Decimal
+  meta_key   String? @db.VarChar(255)
+  meta_value String?
+
+  @@index([meta_key], map: "idx_16617_meta_key")
+  @@index([user_id], map: "idx_16617_user_id")
+}
+
+model wp_users {
+  ID                  BigInt    @unique(map: "idx_16626_PRIMARY") @default(autoincrement())
+  user_login          String    @default("") @db.VarChar(60)
+  user_pass           String    @default("") @db.VarChar(64)
+  user_nicename       String    @default("") @db.VarChar(50)
+  user_email          String    @default("") @db.VarChar(100)
+  user_url            String    @default("") @db.VarChar(100)
+  user_registered     DateTime? @db.Timestamptz(6)
+  user_activation_key String    @default("") @db.VarChar(60)
+  user_status         BigInt    @default(0)
+  display_name        String    @default("") @db.VarChar(250)
+
+  @@index([user_login], map: "idx_16626_user_login_key")
+  @@index([user_nicename], map: "idx_16626_user_nicename")
+}

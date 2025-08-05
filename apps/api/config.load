@@ -1,0 +1,13 @@
+LOAD DATABASE
+    FROM mysql://root:example@localhost:3306/d015ff0b
+    INTO postgresql://user:password@127.0.0.1:5433/quer-durch-asien
+
+WITH quote identifiers,    -- preserve table/column name case by quoting them
+     include drop,
+     create tables,
+     create indexes,
+     reset sequences
+
+ALTER SCHEMA 'd015ff0b' RENAME TO 'public';
+
+
