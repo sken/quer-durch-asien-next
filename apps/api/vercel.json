@@ -1,9 +1,26 @@
 {
   "version": 2,
-  "functions":
+  "builds": [
     {
-      "src/server.ts": {
-        "runtime": "nodejs22.x"
-      }
+      "src": "src/server.ts",
+      "use": "@vercel/node"
     }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/server.ts",
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE",
+        "HEAD",
+        "CONNECT",
+        "TRACE"
+      ]
+    }
+  ]
 }

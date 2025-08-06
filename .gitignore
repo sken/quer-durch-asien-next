@@ -4,3 +4,4 @@
 /.turbo
 
 .DS_Store
+.vercel
