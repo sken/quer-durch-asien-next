@@ -1,0 +1,8 @@
+{
+  "name": "fastify",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "fastify": "^4.25.2"
+  }
+}
