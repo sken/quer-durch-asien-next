@@ -58,8 +58,8 @@ importers:
   apps/web:
     dependencies:
       '@sken/color-picker':
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^2.0.0
+        version: 2.0.0
       next:
         specifier: 15.4.5
         version: 15.4.5(react-dom@19.1.0)(react@19.1.0)
@@ -1532,8 +1532,8 @@ packages:
       '@sinonjs/commons': 3.0.1
     dev: true
 
-  /@sken/color-picker@1.0.4:
-    resolution: {integrity: sha512-g1Skk7URsUrNu+YvfsSTy/i/BEANmPtgKTDO/snJ0y3qOH/oRWvew8rsxqniAFEq020CYo3E4DYT9PbDqxeCAw==}
+  /@sken/color-picker@2.0.0:
+    resolution: {integrity: sha512-+YHZc0vTlO61vetYv9RuMJBjsS1FjjzFMqvdrbZ9Dah/1QHKAcTLu1yTO823vVS4VxbHI7jAddp2+4rcv2AgSQ==}
     dependencies:
       react: 18.3.1
     dev: false
