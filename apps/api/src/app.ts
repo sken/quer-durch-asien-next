@@ -1,4 +1,3 @@
-import {AutoloadPluginOptions} from '@fastify/autoload';
 import {FastifyPluginAsync} from 'fastify';
 
 import prismaPlugin from './plugins/prisma';
@@ -9,7 +8,7 @@ import {imageRoutes} from "./routes/images.routes";
 
 export type AppOptions = {
     // Place your custom options for app below here.
-} & Partial<AutoloadPluginOptions>;
+};
 
 
 // Pass --options via CLI arguments in command to enable these options.
