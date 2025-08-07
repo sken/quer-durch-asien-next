@@ -1,6 +1,7 @@
-
 import {FastifyInstance} from 'fastify';
-import {PrismaClient, colors as Color} from '@prisma/client';
+import {PrismaClient} from '@prisma/client';
+import {colorsModel as Color} from '../generated/client/models';
+
 import {colorSchema} from "../schemas/color.schema";
 
 const prisma = new PrismaClient();
@@ -48,7 +49,9 @@ export default async function colorsRoutes(fastify: FastifyInstance) {
             }
         }
     }, async (request, reply) => {
-        const colors = await prisma.$queryRaw<Color[]>`SELECT * FROM "colors" ORDER BY RANDOM() LIMIT 90`;
+        const colors = await prisma.$queryRaw<Color[]>`SELECT *
+                                                       FROM "colors"
+                                                       ORDER BY RANDOM() LIMIT 90`;
         return serializeBigInt(colors);
     });
 
