@@ -15,7 +15,8 @@
       "outputs": [
         ".next/**",
         "!.next/cache/**"
-      ]
+      ],
+      "env": ["DATABASE_URL"]
     },
     "lint": {},
     "test": {},

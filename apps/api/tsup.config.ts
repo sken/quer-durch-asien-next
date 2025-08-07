@@ -5,5 +5,5 @@ export default defineConfig({
     format: ['esm'],
     clean: true,
     target: 'esnext',
-    tsconfig: 'tsconfig.json',
+    tsconfig: 'tsconfig.json'
 })
