@@ -10,15 +10,6 @@ app.register(import("../src/app"), {
 });
 
 
-app.listen({ port: 3000 }, (err, address) => {
-    if (err) {
-        console.error(err)
-        process.exit(1)
-    }
-    console.log(`Server listening at ${address}`)
-})
-
-
 
 
 export default async (req: any, res: any) => {
