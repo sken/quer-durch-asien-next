@@ -2,7 +2,7 @@
   "name": "quer-durch-asien-api",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node-dev api/serverless.ts",
+    "dev": "ts-node-dev api/index.ts",
     "build": "prisma generate",
     "start": "node dist/server.js"
   },
