@@ -1,10 +1,8 @@
 // routes/images.ts
 
 import { FastifyInstance } from 'fastify';
-import { PrismaClient } from '@prisma/client';
 import {serializeBigInt} from "./colors.routes";
-
-const prisma = new PrismaClient();
+import {images} from "../generated/client/client";
 
 export async function imageRoutes(fastify: FastifyInstance) {
     fastify.get('/', async (request, reply) => {
@@ -14,7 +12,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
             random?: boolean;
         };
 
-        let images = await prisma.images.findMany({
+        let images: images[] = await fastify.prisma.images.findMany({
             where: {
                 NOT: {
                     country: '',
@@ -42,7 +40,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
             lat: img.EXIFGPSLatitude?.replace(',', '.'),
             lng: img.EXIFGPSLongitude?.replace(',', '.'),
             alt: img.EXIFGPSAltitude,
-        }));
+        })) ;
 
         return serializeBigInt(mapped);
 
