@@ -5,5 +5,7 @@
       "destination": "/api/serverless.ts"
     }
   ],
-  "buildCommand": "prisma generate"
+  "buildCommand": "prisma generate",
+  "outputDirectory": "src"
+
 }
