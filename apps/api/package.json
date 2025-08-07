@@ -12,6 +12,7 @@
     "@prisma/client": "^6.13.0",
     "@prisma/extension-accelerate": "^1.3.0",
     "@vercel/node": "^5.3.11",
+    "fastify-plugin": "^5.0.1",
     "fastify": "^4.0.0",
     "prisma": "^6.7.0",
     "tsup": "^8.0.2"
