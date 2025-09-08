@@ -1,4 +1,5 @@
 import {FastifyPluginAsync} from 'fastify';
+import cors from '@fastify/cors'; // Added import
 
 import prismaPlugin from './plugins/prisma';
 import swaggerPlugin from './plugins/swagger';
@@ -20,6 +21,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
     fastify.register(prismaPlugin);
     fastify.register(swaggerPlugin);
+    fastify.register(cors, { origin: 'http://localhost:4200' }); // Registered cors plugin
     fastify.register(colorsRoutes, {prefix: '/colors'});
     fastify.register(imageRoutes, {prefix: '/images'});
 };
