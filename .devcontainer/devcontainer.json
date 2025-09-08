@@ -1,7 +1,12 @@
+
+
+
+
 {
-	"name": "Quer Durch Asien Dev Container",
-	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
-	"features": {},
+	"name": "PNPM Dev Container",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 	"customizations": {
 		"vscode": {
 			"settings": {},
@@ -13,7 +18,8 @@
 			]
 		}
 	},
-	"postCreateCommand": "pnpm install",
+	"postCreateCommand": "corepack enable && pnpm install",
+
 	"forwardPorts": [3000],
 	"portsAttributes": {
 		"3000": {
@@ -21,5 +27,5 @@
 			"onAutoForward": "notify"
 		}
 	},
-	"remoteUser": "vscode"
+  "remoteUser": "vscode"
 }
