@@ -6,9 +6,10 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/apps/web",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
-      "port": 9229,
+      "runtimeExecutable": "node",
+      "program": "${workspaceFolder}/apps/web/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+  // ...existing code...
       "console": "integratedTerminal"
     },
     {
@@ -16,9 +17,10 @@
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}/apps/api",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
-      "port": 9230,
+      "runtimeExecutable": "node",
+      "program": "${workspaceFolder}/apps/api/node_modules/.bin/ts-node",
+      "args": ["src/app.ts"],
+  // ...existing code...
       "console": "integratedTerminal"
     }
   ]
