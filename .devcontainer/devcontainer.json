@@ -1,0 +1,25 @@
+{
+	"name": "Quer Durch Asien Dev Container",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+	"features": {},
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"esbenp.prettier-vscode",
+				"dbaeumer.vscode-eslint",
+				"Prisma.prisma",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	},
+	"postCreateCommand": "pnpm install",
+	"forwardPorts": [3000],
+	"portsAttributes": {
+		"3000": {
+			"label": "Web/Api",
+			"onAutoForward": "notify"
+		}
+	},
+	"remoteUser": "vscode"
+}
