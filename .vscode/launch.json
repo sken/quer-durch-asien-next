@@ -5,23 +5,8 @@
       "name": "Launch Next.js Web",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}/apps/web",
-      "runtimeExecutable": "node",
-      "program": "${workspaceFolder}/apps/web/node_modules/next/dist/bin/next",
-      "args": ["dev"],
-  // ...existing code...
-      "console": "integratedTerminal"
-    },
-    {
-      "name": "Launch API",
-      "type": "node",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/apps/api",
-      "runtimeExecutable": "node",
-      "program": "${workspaceFolder}/apps/api/node_modules/.bin/ts-node",
-      "args": ["src/app.ts"],
-  // ...existing code...
-      "console": "integratedTerminal"
+      "runtimeExecutable": "turbo",
+      "runtimeArgs": ["dev"],
     }
   ]
 }
