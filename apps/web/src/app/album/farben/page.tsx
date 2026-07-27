@@ -66,7 +66,7 @@ export default function AlbumFarbenPage() {
             {/* Photos Grid */}
             {images.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-                    {images.map((img: { id: number; title: string; folder: string; file: string }) => (
+                    {images.map((img: { id: number; title: string; folder: string; file: string; country?: string; day?: string }) => (
                         <div key={img.id} className="group bg-white rounded border border-gray-100 p-2 shadow-sm hover:shadow transition-shadow">
                             <div className="relative aspect-square overflow-hidden bg-gray-100 rounded">
                                 <Link href={`/bild/${img.title}`}>
