@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import MapWrapper from './MapWrapper';
 
+export const dynamic = 'force-dynamic';
+
 interface TrackPoint {
     id: string;
     lat: number;
