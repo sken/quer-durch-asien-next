@@ -32,7 +32,7 @@ interface TravelDay {
 }
 
 async function getImages(country?: string, date?: string, page: number = 1): Promise<ImagesResponse> {
-    let url = `${process.env.NEXT_PUBLIC_API_URL || 'https://quer-durch-asien-api.vercel.app'}/images?limit=12&page=${page}`;
+    let url = `${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/images?limit=12&page=${page}`;
     if (country) url += `&country=${country}`;
     if (date) url += `&date=${date}`;
 
@@ -44,7 +44,7 @@ async function getImages(country?: string, date?: string, page: number = 1): Pro
 }
 
 async function getTravelDays(): Promise<TravelDay[]> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://quer-durch-asien-api.vercel.app'}/images/days`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/images/days`, { cache: 'no-store' });
     if (!res.ok) {
         throw new Error('Failed to fetch travel days');
     }
