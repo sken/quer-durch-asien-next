@@ -20,7 +20,7 @@ interface Comment {
 }
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/posts/by-slug/${slug}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/by-slug/${slug}`, {
         cache: 'no-store',
     });
     if (res.status === 404) {
@@ -33,7 +33,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 async function getPostComments(postId: string): Promise<Comment[]> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/posts/${postId}/comments`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/${postId}/comments`, {
         cache: 'no-store',
     });
     if (!res.ok) {

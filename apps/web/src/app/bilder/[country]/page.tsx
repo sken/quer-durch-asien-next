@@ -24,7 +24,7 @@ interface FetchResponse {
 }
 
 async function getCountryImages(country: string, page: number): Promise<FetchResponse> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/images?country=${country}&limit=24&page=${page}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/images?country=${country}&limit=24&page=${page}`, {
         cache: 'no-store',
     });
     if (!res.ok) {

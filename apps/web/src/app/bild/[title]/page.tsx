@@ -38,7 +38,7 @@ interface ImageDetails {
 }
 
 async function getImageDetails(title: string): Promise<ImageDetails | null> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/images/by-title/${title}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/images/by-title/${title}`, {
         cache: 'no-store',
     });
     if (res.status === 404) {

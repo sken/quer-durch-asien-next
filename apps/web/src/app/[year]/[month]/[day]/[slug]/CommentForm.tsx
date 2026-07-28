@@ -26,7 +26,7 @@ export default function CommentForm({ postId }: { postId: string }) {
         }
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://next.quer-durch-asien.de'}/posts/${postId}/comments`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/${postId}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
