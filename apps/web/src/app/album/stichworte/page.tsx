@@ -31,7 +31,7 @@ interface KeywordTag {
 }
 
 async function getImages(tag?: string, page: number = 1): Promise<ImagesResponse> {
-    let url = `http://localhost:3000/images?limit=12&page=${page}`;
+    let url = `${process.env.NEXT_PUBLIC_API_URL || 'https://quer-durch-asien-api.vercel.app'}/images?limit=12&page=${page}`;
     if (tag) url += `&tag=${tag}`;
 
     const res = await fetch(url, { cache: 'no-store' });
@@ -42,7 +42,7 @@ async function getImages(tag?: string, page: number = 1): Promise<ImagesResponse
 }
 
 async function getTags(): Promise<KeywordTag[]> {
-    const res = await fetch('http://localhost:3000/images/tags', { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://quer-durch-asien-api.vercel.app'}/images/tags`, { cache: 'no-store' });
     if (!res.ok) {
         throw new Error('Failed to fetch tags');
     }

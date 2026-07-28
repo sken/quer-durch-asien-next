@@ -32,7 +32,7 @@ function getLegacyLink(postDateStr: string, slug: string) {
 }
 
 async function getPosts(page: number): Promise<FetchResponse> {
-    const res = await fetch(`http://localhost:3000/posts?limit=8&page=${page}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://quer-durch-asien-api.vercel.app'}/posts?limit=8&page=${page}`, {
         cache: 'no-store', // Ensures fresh data
     });
     if (!res.ok) {
