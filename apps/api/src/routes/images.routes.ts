@@ -3,55 +3,16 @@
 import { FastifyInstance } from 'fastify';
 import { Prisma } from '../generated/client/client';
 import { serializeBigInt } from './colors.routes';
+import type { images as ImageRow } from '../generated/client/client';
 import { toBool, toInt, toOptionalInt } from '../utils/query';
+import { ColorQuery, searchImagesByColor } from '../services/color-search';
 
-interface DbImage {
-    id: number;
-    filename: string;
-    title: string | null;
-    title_number: number;
-    desc: string | null;
-    country: string | null;
-    copyright: string | null;
-    commentson: number;
-    show: number;
-    date: Date | null;
-    height: number | null;
-    width: number | null;
-    mtime: number | null;
-    hitcounter: number | null;
-    EXIFValid: number | null;
-    EXIFOrientation: string | null;
-    EXIFMake: string | null;
-    EXIFModel: string | null;
-    EXIFExposureTime: string | null;
-    EXIFFNumber: string | null;
-    EXIFFocalLength: string | null;
-    EXIFFocalLength35mm: string | null;
-    EXIFISOSpeedRatings: string | null;
-    EXIFDateTimeOriginal: string | null;
-    EXIFExposureBiasValue: string | null;
-    EXIFMeteringMode: string | null;
-    EXIFFlash: string | null;
-    EXIFImageWidth: string | null;
-    EXIFImageHeight: string | null;
-    EXIFContrast: string | null;
-    EXIFSharpness: string | null;
-    EXIFSaturation: string | null;
-    EXIFWhiteBalance: string | null;
-    EXIFSubjectDistance: string | null;
-    EXIFGPSLatitude: string | null;
-    EXIFGPSLatitudeRef: string | null;
-    EXIFGPSLongitude: string | null;
-    EXIFGPSLongitudeRef: string | null;
-    EXIFGPSAltitude: string | null;
-    EXIFGPSAltitudeRef: string | null;
-    custom_data: string | null;
-    hue: number;
-    saturation: number;
-    value: number;
-    rgb: string;
-    created_on: Date;
+// [start of day, start of next day) for a YYYY-MM-DD string, in UTC.
+function dayRange(day: string): { gte: Date; lt: Date } {
+    const start = new Date(`${day}T00:00:00.000Z`);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 1);
+    return { gte: start, lt: end };
 }
 
 export async function imageRoutes(fastify: FastifyInstance) {
@@ -226,97 +187,24 @@ export async function imageRoutes(fastify: FastifyInstance) {
         const s = toOptionalInt(query.s, 0, 100);
         const v = toOptionalInt(query.v, 0, 100);
 
-        let dbImages: DbImage[] = [];
+        let dbImages: ImageRow[] = [];
         let totalCount = 0;
 
-        // Helper to create a range
-        const createRange = (val: number, range: number, minVal: number, maxVal: number) => {
-            const min = Math.max(minVal, val - range);
-            const max = Math.min(maxVal, val + range);
-            return [min, max];
-        };
+        const colorQuery: ColorQuery | undefined =
+            h !== undefined && s !== undefined && v !== undefined ? { kind: 'hsv', h, s, v }
+            : r !== undefined && g !== undefined && b !== undefined ? { kind: 'rgb', r, g, b }
+            : undefined;
 
         try {
-            if (h !== undefined && s !== undefined && v !== undefined) {
-                // HSV filtering
-                const hue_range = 10;
-                const saturation_value_range = 20;
-                const rel = 1;
-
-                let min_h: number, max_h: number;
-                if (h >= hue_range && h <= (360 - (hue_range / rel))) {
-                    min_h = h - (hue_range / rel);
-                    max_h = h + (hue_range / rel);
-                } else if (h < hue_range) {
-                    min_h = 0;
-                    max_h = hue_range;
-                } else {
-                    min_h = (360 - hue_range);
-                    max_h = 360;
-                }
-
-                const [min_s, max_s] = createRange(s, saturation_value_range, 0, 100);
-                const [min_v, max_v] = createRange(v, saturation_value_range, 0, 100);
-
-                const counts = await fastify.prisma.$queryRaw<{ total: bigint }[]>(Prisma.sql`
-                    SELECT COUNT(DISTINCT i.id) as total
-                    FROM images i
-                    JOIN color_to_image cti ON i.id = cti.image_id
-                    JOIN colors c ON cti.color_id = c.id
-                    WHERE i.country IS NOT NULL AND i.country != '' AND
-                          c.hue BETWEEN ${min_h} AND ${max_h} AND
-                          c.saturation BETWEEN ${min_s} AND ${max_s} AND
-                          c.value BETWEEN ${min_v} AND ${max_v}
-                `);
-                totalCount = Number(counts[0]?.total || 0);
-
-                dbImages = await fastify.prisma.$queryRaw<DbImage[]>(Prisma.sql`
-                    SELECT i.*, MIN(c.hue) AS hue, MIN(c.saturation) AS saturation, MIN(c.value) AS value, MIN(c."rgb") AS rgb
-                    FROM images i
-                    JOIN color_to_image cti ON i.id = cti.image_id
-                    JOIN colors c ON cti.color_id = c.id
-                    WHERE i.country IS NOT NULL AND i.country != '' AND
-                          c.hue BETWEEN ${min_h} AND ${max_h} AND
-                          c.saturation BETWEEN ${min_s} AND ${max_s} AND
-                          c.value BETWEEN ${min_v} AND ${max_v}
-                    GROUP BY i.id
-                    ORDER BY ABS((MIN(c.hue)::numeric + MIN(c.saturation)::numeric + MIN(c.value)::numeric) - (${h}::numeric + ${s}::numeric + ${v}::numeric)) ASC
-                    LIMIT ${take} OFFSET ${skip};
-                `);
-
-            } else if (r !== undefined && g !== undefined && b !== undefined) {
-                // RGB filtering using clean SQL join to fetch full columns without GROUP BY errors
-                const rgb_range = 30;
-                const [min_r, max_r] = createRange(r, rgb_range, 0, 255);
-                const [min_g, max_g] = createRange(g, rgb_range, 0, 255);
-                const [min_b, max_b] = createRange(b, rgb_range, 0, 255);
-
-                const counts = await fastify.prisma.$queryRaw<{ total: bigint }[]>(Prisma.sql`
-                    SELECT COUNT(DISTINCT i.id) as total
-                    FROM images i
-                    JOIN color_to_image cti ON i.id = cti.image_id
-                    JOIN colors c ON cti.color_id = c.id
-                    WHERE i.country IS NOT NULL AND i.country != '' AND
-                          c.red BETWEEN ${min_r} AND ${max_r} AND
-                          c.green BETWEEN ${min_g} AND ${max_g} AND
-                          c.blue BETWEEN ${min_b} AND ${max_b}
-                `);
-                totalCount = Number(counts[0]?.total || 0);
-
-                dbImages = await fastify.prisma.$queryRaw<DbImage[]>(Prisma.sql`
-                    SELECT i.*, MIN(c.hue) AS hue, MIN(c.saturation) AS saturation, MIN(c.value) AS value, MIN(c."rgb") AS rgb
-                    FROM images i
-                    JOIN color_to_image cti ON i.id = cti.image_id
-                    JOIN colors c ON cti.color_id = c.id
-                    WHERE i.country IS NOT NULL AND i.country != '' AND
-                          c.red BETWEEN ${min_r} AND ${max_r} AND
-                          c.green BETWEEN ${min_g} AND ${max_g} AND
-                          c.blue BETWEEN ${min_b} AND ${max_b}
-                    GROUP BY i.id
-                    ORDER BY ABS((MIN(c.red)::numeric + MIN(c.green)::numeric + MIN(c.blue)::numeric) - (${r}::numeric + ${g}::numeric + ${b}::numeric)) ASC
-                    LIMIT ${take} OFFSET ${skip};
-                `);
-
+            if (colorQuery) {
+                // Colour search: images whose closest palette colour is nearest first
+                const { matches, total } = await searchImagesByColor(fastify.prisma, colorQuery, take, skip);
+                totalCount = total;
+                const rows = await fastify.prisma.images.findMany({
+                    where: { id: { in: matches.map(m => m.id) } },
+                });
+                const byId = new Map(rows.map(row => [row.id, row]));
+                dbImages = matches.flatMap(m => byId.get(m.id) ?? []);
             } else {
                 // Unified dynamic filtering (Country, Tag, Date, or Default)
                 const whereClause: Prisma.imagesWhereInput = {
@@ -331,13 +219,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
                 }
 
                 if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
-                    const parsedDate = new Date(date);
-                    const nextDay = new Date(parsedDate);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    whereClause.date = {
-                        gte: parsedDate,
-                        lt: nextDay
-                    };
+                    whereClause.date = dayRange(date);
                 }
 
                 if (tag) {
@@ -350,33 +232,23 @@ export async function imageRoutes(fastify: FastifyInstance) {
                         });
                         const imageIds = mappings.map(m => Number(m.image_id));
                         whereClause.id = { in: imageIds };
+                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(tag)) {
+                        // Legacy CodeIgniter routes also used the tag slot for a travel day
+                        whereClause.date = dayRange(tag);
                     } else {
-                        // Fallback: If tag matches a date format (CodeIgniter's route mapping legacy), filter by date instead
-                        if (/^\d{4}-\d{2}-\d{2}$/.test(tag)) {
-                            const parsedDate = new Date(tag);
-                            const nextDay = new Date(parsedDate);
-                            nextDay.setDate(nextDay.getDate() + 1);
-                            whereClause.date = {
-                                gte: parsedDate,
-                                lt: nextDay
-                            };
-                        } else {
-                            whereClause.id = -1; // Empty results
-                        }
+                        whereClause.id = -1; // Empty results
                     }
                 }
 
-                totalCount = await fastify.prisma.images.count({
-                    where: whereClause
-                });
-
-                const rawImages = await fastify.prisma.images.findMany({
-                    where: whereClause,
-                    orderBy: { date: 'asc' },
-                    take,
-                    skip
-                });
-                dbImages = rawImages.map(img => ({ ...img, hue: 0, saturation: 0, value: 0, rgb: '' }));
+                [totalCount, dbImages] = await Promise.all([
+                    fastify.prisma.images.count({ where: whereClause }),
+                    fastify.prisma.images.findMany({
+                        where: whereClause,
+                        orderBy: [{ date: 'asc' }, { id: 'asc' }],
+                        take,
+                        skip
+                    }),
+                ]);
             }
 
             if (random) {

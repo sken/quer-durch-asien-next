@@ -4,8 +4,9 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only api/index.ts",
     "generate": "prisma generate",
-    "build": "prisma generate",
-    "start": "node dist/index.js",
+    "build": "prisma generate && tsc -p tsconfig.build.json && cp src/generated/client/*.node dist/src/generated/client/",
+    "start": "node dist/api/index.js",
+    "test": "node --require ts-node/register/transpile-only --test 'test/**/*.test.ts'",
     "postinstall": "prisma generate"
   },
   "dependencies": {

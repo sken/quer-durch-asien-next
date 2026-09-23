@@ -4,3 +4,4 @@ node_modules
 .idea
 # Prisma client is generated on install (`prisma generate`)
 src/generated
+dist
