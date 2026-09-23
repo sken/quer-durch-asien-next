@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only api/index.ts",
+    "generate": "prisma generate",
     "build": "prisma generate",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@fastify/swagger": "^9.5.1",

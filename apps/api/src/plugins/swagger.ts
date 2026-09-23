@@ -6,7 +6,7 @@ export default fp(async (fastify) => {
   await fastify.register(swagger, {
     swagger: {
       info: {
-        title: 'Fastify Supabase API',
+        title: 'Quer durch Asien API',
         description: 'API Dokumentation',
         version: '1.0.0',
       },

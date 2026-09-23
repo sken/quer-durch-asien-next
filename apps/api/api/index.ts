@@ -10,13 +10,16 @@ app.register(import("../src/app"), {
 });
 
 
-app.listen({ port: 3000 }, (err, address) => {
-    if (err) {
-        console.error(err)
-        process.exit(1)
-    }
-    console.log(`Server listening at ${address}`)
-})
+// On Vercel the exported handler is used; only bind a port when running standalone.
+if (!process.env.VERCEL) {
+    app.listen({ port: Number(process.env.PORT) || 3000 }, (err, address) => {
+        if (err) {
+            console.error(err)
+            process.exit(1)
+        }
+        console.log(`Server listening at ${address}`)
+    })
+}
 
 
 

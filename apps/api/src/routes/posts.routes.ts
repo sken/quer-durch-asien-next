@@ -1,17 +1,37 @@
 import { FastifyInstance } from 'fastify';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/client/client';
 import { serializeBigInt } from './colors.routes';
+import { isNumericId, toInt } from '../utils/query';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// New comments are held for moderation unless explicitly enabled.
+// Public comment fields only: never expose commenter email, IP or user agent.
+const PUBLIC_COMMENT_FIELDS = {
+    comment_ID: true,
+    comment_post_ID: true,
+    comment_author: true,
+    comment_author_url: true,
+    comment_date: true,
+    comment_content: true,
+    comment_parent: true,
+} as const;
+
+function autoApproveComments(): boolean {
+    return process.env.COMMENTS_AUTO_APPROVE === 'true';
+}
 
 export default async function postsRoutes(fastify: FastifyInstance) {
     // 1. Get all published posts (paginated)
     fastify.get('/', async (request, reply) => {
-        const { limit = 10, page = 1 } = request.query as {
-            limit?: number;
-            page?: number;
+        const query = request.query as {
+            limit?: string;
+            page?: string;
         };
 
-        const take = Number(limit);
-        const skip = (Number(page) - 1) * take;
+        const take = toInt(query.limit, 10, 1, 50);
+        const page = toInt(query.page, 1, 1, 100000);
+        const skip = (page - 1) * take;
 
         try {
             const [posts, total] = await Promise.all([
@@ -19,6 +39,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                     where: {
                         post_status: 'publish',
                         post_type: 'post',
+                        post_password: '',
                     },
                     orderBy: {
                         post_date: 'desc',
@@ -30,6 +51,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                     where: {
                         post_status: 'publish',
                         post_type: 'post',
+                        post_password: '',
                     },
                 }),
             ]);
@@ -39,7 +61,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                 pagination: {
                     total,
                     limit: take,
-                    page: Number(page),
+                    page,
                     pages: Math.ceil(total / take),
                 },
             });
@@ -59,6 +81,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                     post_name: slug,
                     post_status: 'publish',
                     post_type: 'post',
+                    post_password: '',
                 },
             });
 
@@ -76,6 +99,9 @@ export default async function postsRoutes(fastify: FastifyInstance) {
     // 3. Get approved comments for a post
     fastify.get('/:postId/comments', async (request, reply) => {
         const { postId } = request.params as { postId: string };
+        if (!isNumericId(postId)) {
+            return reply.status(400).send({ message: 'Invalid post id.' });
+        }
 
         try {
             const comments = await fastify.prisma.wp_comments.findMany({
@@ -83,6 +109,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                     comment_post_ID: new Prisma.Decimal(postId),
                     comment_approved: '1',
                 },
+                select: PUBLIC_COMMENT_FIELDS,
                 orderBy: {
                     comment_date: 'asc',
                 },
@@ -98,15 +125,36 @@ export default async function postsRoutes(fastify: FastifyInstance) {
     // 4. Submit a comment for a post
     fastify.post('/:postId/comments', async (request, reply) => {
         const { postId } = request.params as { postId: string };
-        const { author, email, url = '', content } = request.body as {
-            author: string;
-            email: string;
-            url?: string;
-            content: string;
+        const body = (request.body ?? {}) as {
+            author?: unknown;
+            email?: unknown;
+            url?: unknown;
+            content?: unknown;
+            website?: unknown; // honeypot, must stay empty
         };
+        const author = typeof body.author === 'string' ? body.author.trim() : '';
+        const email = typeof body.email === 'string' ? body.email.trim() : '';
+        const url = typeof body.url === 'string' ? body.url.trim() : '';
+        const content = typeof body.content === 'string' ? body.content.trim() : '';
 
+        if (!isNumericId(postId)) {
+            return reply.status(400).send({ message: 'Invalid post id.' });
+        }
         if (!author || !email || !content) {
             return reply.status(400).send({ message: 'Author, email, and content are required.' });
+        }
+        if (author.length > 245 || email.length > 100 || url.length > 200 || content.length > 5000) {
+            return reply.status(400).send({ message: 'Input too long.' });
+        }
+        if (!EMAIL_RE.test(email)) {
+            return reply.status(400).send({ message: 'Invalid email address.' });
+        }
+        if (url && !/^https?:\/\//i.test(url)) {
+            return reply.status(400).send({ message: 'URL must start with http:// or https://.' });
+        }
+        if (typeof body.website === 'string' && body.website !== '') {
+            // Bot filled the hidden honeypot field: pretend success, store nothing.
+            return reply.status(201).send({ approved: false });
         }
 
         try {
@@ -114,6 +162,9 @@ export default async function postsRoutes(fastify: FastifyInstance) {
             const post = await fastify.prisma.wp_posts.findFirst({
                 where: {
                     ID: BigInt(postId),
+                    post_status: 'publish',
+                    post_type: 'post',
+                    comment_status: 'open',
                 },
             });
 
@@ -121,6 +172,7 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                 return reply.status(404).send({ message: 'Post not found.' });
             }
 
+            const approved = autoApproveComments();
             const now = new Date();
             const ipAddress = request.ip || '127.0.0.1';
             const userAgent = request.headers['user-agent'] || '';
@@ -135,25 +187,31 @@ export default async function postsRoutes(fastify: FastifyInstance) {
                     comment_content: content,
                     comment_date: now,
                     comment_date_gmt: now,
-                    comment_approved: '1', // Auto-approved for simplicity
+                    comment_approved: approved ? '1' : '0',
                     comment_agent: userAgent,
                     comment_karma: BigInt(0),
                     comment_parent: new Prisma.Decimal(0),
                     user_id: new Prisma.Decimal(0),
                 },
+                select: PUBLIC_COMMENT_FIELDS,
             });
 
-            // Increment the comment_count on the post
-            await fastify.prisma.wp_posts.update({
-                where: {
-                    ID: BigInt(postId),
-                },
-                data: {
-                    comment_count: post.comment_count + BigInt(1),
-                },
-            });
+            // comment_count only tracks approved comments (WordPress semantics)
+            if (approved) {
+                await fastify.prisma.wp_posts.update({
+                    where: {
+                        ID: BigInt(postId),
+                    },
+                    data: {
+                        comment_count: { increment: 1 },
+                    },
+                });
+            }
 
-            return serializeBigInt(newComment);
+            return reply.status(201).send({
+                approved,
+                comment: approved ? serializeBigInt(newComment) : null,
+            });
         } catch (error) {
             fastify.log.error(error);
             return reply.status(500).send({ message: 'Failed to submit comment.' });

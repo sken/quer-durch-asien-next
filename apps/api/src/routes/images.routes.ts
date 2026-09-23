@@ -1,8 +1,9 @@
 // routes/images.ts
 
 import { FastifyInstance } from 'fastify';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/client/client';
 import { serializeBigInt } from './colors.routes';
+import { toBool, toInt, toOptionalInt } from '../utils/query';
 
 interface DbImage {
     id: number;
@@ -17,10 +18,6 @@ interface DbImage {
     date: Date | null;
     height: number | null;
     width: number | null;
-    thumbX: number | null;
-    thumbY: number | null;
-    thumbW: number | null;
-    thumbH: number | null;
     mtime: number | null;
     hitcounter: number | null;
     EXIFValid: number | null;
@@ -200,23 +197,34 @@ export async function imageRoutes(fastify: FastifyInstance) {
 
     // 3. Get images (main endpoint supporting colors, tags, countries, dates, and pagination)
     fastify.get('/', async (request, reply) => {
-        const { limit = 14, random = false, r, g, b, h, s, v, page = 1, country, tag, date } = request.query as {
-            limit?: number;
-            random?: boolean;
-            r?: number;
-            g?: number;
-            b?: number;
-            h?: number;
-            s?: number;
-            v?: number;
-            page?: number;
+        const query = request.query as {
+            limit?: string;
+            random?: string;
+            r?: string;
+            g?: string;
+            b?: string;
+            h?: string;
+            s?: string;
+            v?: string;
+            page?: string;
             country?: string;
             tag?: string;
             date?: string;
         };
+        const { country, tag, date } = query;
 
-        const take = Number(limit);
-        const skip = (Number(page) - 1) * take;
+        // Query params are strings: parse them to bounded numbers up front so the
+        // range arithmetic below is numeric (previously `h + 10` concatenated).
+        const take = toInt(query.limit, 14, 1, 100);
+        const page = toInt(query.page, 1, 1, 100000);
+        const skip = (page - 1) * take;
+        const random = toBool(query.random);
+        const r = toOptionalInt(query.r, 0, 255);
+        const g = toOptionalInt(query.g, 0, 255);
+        const b = toOptionalInt(query.b, 0, 255);
+        const h = toOptionalInt(query.h, 0, 360);
+        const s = toOptionalInt(query.s, 0, 100);
+        const v = toOptionalInt(query.v, 0, 100);
 
         let dbImages: DbImage[] = [];
         let totalCount = 0;
@@ -236,7 +244,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
                 const rel = 1;
 
                 let min_h: number, max_h: number;
-                if (h > hue_range && h < (360 - (hue_range / rel))) {
+                if (h >= hue_range && h <= (360 - (hue_range / rel))) {
                     min_h = h - (hue_range / rel);
                     max_h = h + (hue_range / rel);
                 } else if (h < hue_range) {
@@ -322,7 +330,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
                     };
                 }
 
-                if (date) {
+                if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
                     const parsedDate = new Date(date);
                     const nextDay = new Date(parsedDate);
                     nextDay.setDate(nextDay.getDate() + 1);
@@ -396,7 +404,7 @@ export async function imageRoutes(fastify: FastifyInstance) {
                 pagination: {
                     total: totalCount,
                     limit: take,
-                    page: Number(page),
+                    page,
                     pages: Math.ceil(totalCount / take),
                 }
             });
