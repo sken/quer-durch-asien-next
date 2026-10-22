@@ -1,12 +1,13 @@
 import { FastifyInstance } from 'fastify';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../generated/client/client';
 import { serializeBigInt } from './colors.routes';
+import { toInt } from '../utils/query';
 
 export default async function gpsRoutes(fastify: FastifyInstance) {
     // 1. Get downsampled GPS track points for plotting the polyline route path
     fastify.get('/tracks', async (request, reply) => {
-        const { downsample = 10 } = request.query as { downsample?: number };
-        const factor = Number(downsample);
+        const { downsample } = request.query as { downsample?: string };
+        const factor = toInt(downsample, 10, 1, 1000);
 
         try {
             // Downsample in PostgreSQL for speed and performance

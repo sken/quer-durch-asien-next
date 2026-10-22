@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import MapWrapper from './MapWrapper';
+import { apiUrl } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +24,7 @@ interface PhotoPoint {
 }
 
 async function getGpsTracks(): Promise<TrackPoint[]> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/gps/tracks?downsample=15`, {
+    const res = await fetch(apiUrl(`/gps/tracks?downsample=15`), {
         cache: 'no-store',
     });
     if (!res.ok) {
@@ -33,7 +34,7 @@ async function getGpsTracks(): Promise<TrackPoint[]> {
 }
 
 async function getGeotaggedPhotos(): Promise<PhotoPoint[]> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/gps/photos`, {
+    const res = await fetch(apiUrl(`/gps/photos`), {
         cache: 'no-store',
     });
     if (!res.ok) {

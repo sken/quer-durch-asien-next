@@ -1,7 +1,9 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:20-bullseye
+FROM mcr.microsoft.com/devcontainers/javascript-node:22-bookworm
 
-# Enable corepack and ensure pnpm is available
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# psql/pg_dump for importing and inspecting the database
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Add custom bashrc for pnpm PATH
-COPY .bashrc /root/.bashrc
+# pnpm via corepack; the version comes from "packageManager" in package.json
+RUN corepack enable

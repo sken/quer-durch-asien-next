@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiUrl } from '@/lib/api';
 
 export default function CommentForm({ postId }: { postId: string }) {
     const router = useRouter();
@@ -9,15 +10,17 @@ export default function CommentForm({ postId }: { postId: string }) {
     const [email, setEmail] = useState('');
     const [url, setUrl] = useState('');
     const [content, setContent] = useState('');
+    // Honeypot: hidden from humans, bots tend to fill it in.
+    const [website, setWebsite] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [success, setSuccess] = useState<null | 'published' | 'pending'>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
         setError(null);
-        setSuccess(false);
+        setSuccess(null);
 
         if (!author.trim() || !email.trim() || !content.trim()) {
             setError('Name, E-Mail-Adresse und Kommentar sind Pflichtfelder.');
@@ -26,7 +29,7 @@ export default function CommentForm({ postId }: { postId: string }) {
         }
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/${postId}/comments`, {
+            const res = await fetch(apiUrl(`/posts/${postId}/comments`), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -36,6 +39,7 @@ export default function CommentForm({ postId }: { postId: string }) {
                     email,
                     url,
                     content,
+                    website,
                 }),
             });
 
@@ -43,16 +47,19 @@ export default function CommentForm({ postId }: { postId: string }) {
                 const data = await res.json();
                 throw new Error(data.message || 'Kommentar konnte nicht gesendet werden.');
             }
+            const data = await res.json() as { approved?: boolean };
 
             // Clear form
             setAuthor('');
             setEmail('');
             setUrl('');
             setContent('');
-            setSuccess(true);
+            setSuccess(data.approved ? 'published' : 'pending');
 
             // Refresh the server component to load the newly added comment
-            router.refresh();
+            if (data.approved) {
+                router.refresh();
+            }
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Verbindung zum API-Server fehlgeschlagen.');
         } finally {
@@ -69,9 +76,24 @@ export default function CommentForm({ postId }: { postId: string }) {
             )}
             {success && (
                 <div className="p-3 bg-green-50 border border-green-200 text-green-700 text-sm rounded">
-                    Kommentar erfolgreich gesendet! Er wird sofort angezeigt.
+                    {success === 'published'
+                        ? 'Kommentar erfolgreich gesendet!'
+                        : 'Danke! Dein Kommentar wird nach einer kurzen Prüfung freigeschaltet.'}
                 </div>
             )}
+
+            <div aria-hidden="true" className="hidden">
+                <label htmlFor="website">Bitte leer lassen</label>
+                <input
+                    type="text"
+                    id="website"
+                    name="website"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

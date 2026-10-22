@@ -6,7 +6,16 @@
   "tasks": {
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "TEST_DATABASE_URL",
+        "CORS_ORIGINS",
+        "ADMIN_API_KEY",
+        "COMMENTS_AUTO_APPROVE",
+        "PORT",
+        "NEXT_PUBLIC_API_URL"
+      ]
     },
     "build": {
       "dependsOn": [
@@ -16,10 +25,23 @@
         ".next/**",
         "!.next/cache/**"
       ],
-      "env": ["DATABASE_URL"]
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_API_URL"
+      ]
     },
     "lint": {},
-    "test": {},
+    "test": {
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "TEST_DATABASE_URL",
+        "CORS_ORIGINS",
+        "ADMIN_API_KEY",
+        "COMMENTS_AUTO_APPROVE",
+        "PORT",
+        "NEXT_PUBLIC_API_URL"
+      ]
+    },
     "test:e2e": {}
   }
 }

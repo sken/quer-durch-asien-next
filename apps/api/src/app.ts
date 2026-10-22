@@ -14,6 +14,24 @@ export type AppOptions = {
 };
 
 
+const DEFAULT_CORS_ORIGINS = [
+    'http://localhost:4200',
+    'http://localhost:4300',
+    'https://quer-durch-asien.de',
+    'https://www.quer-durch-asien.de',
+    'https://next.quer-durch-asien.de',
+];
+
+// Browser-side pages (color search, comment form) call the API directly,
+// so production origins must be allowed. Override with CORS_ORIGINS (comma-separated).
+function corsOrigins(): string[] {
+    const configured = process.env.CORS_ORIGINS;
+    if (!configured) {
+        return DEFAULT_CORS_ORIGINS;
+    }
+    return configured.split(',').map(o => o.trim()).filter(Boolean);
+}
+
 // Pass --options via CLI arguments in command to enable these options.
 const options: AppOptions = {}
 
@@ -23,7 +41,7 @@ const app: FastifyPluginAsync<AppOptions> = async (
 ): Promise<void> => {
     fastify.register(prismaPlugin);
     fastify.register(swaggerPlugin);
-    fastify.register(cors, { origin: ['http://localhost:4200', 'http://localhost:4300'] }); // Registered cors plugin supporting port 4200 and 4300
+    fastify.register(cors, { origin: corsOrigins() });
     fastify.register(colorsRoutes, {prefix: '/colors'});
     fastify.register(imageRoutes, {prefix: '/images'});
     fastify.register(postsRoutes, {prefix: '/posts'});

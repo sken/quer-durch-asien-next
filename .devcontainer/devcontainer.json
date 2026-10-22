@@ -1,31 +1,25 @@
-
-
-
-
 {
-	"name": "PNPM Dev Container",
-	"build": {
-		"dockerfile": "Dockerfile"
-	},
-	"customizations": {
-		"vscode": {
-			"settings": {},
-			"extensions": [
-				"esbenp.prettier-vscode",
-				"dbaeumer.vscode-eslint",
-				"Prisma.prisma",
-				"ms-azuretools.vscode-docker"
-			]
-		}
-	},
-	"postCreateCommand": "corepack enable && pnpm install",
-
-	"forwardPorts": [3000],
-	"portsAttributes": {
-		"3000": {
-			"label": "Web/Api",
-			"onAutoForward": "notify"
-		}
-	},
-  "remoteUser": "vscode"
+  "name": "Quer durch Asien",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "remoteUser": "node",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "Prisma.prisma",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "forwardPorts": [4200, 3000, 5555],
+  "portsAttributes": {
+    "4200": { "label": "Web (Next.js)", "onAutoForward": "openBrowser" },
+    "3000": { "label": "API (Fastify, Swagger at /docs)", "onAutoForward": "notify" },
+    "5555": { "label": "Prisma Studio", "onAutoForward": "openBrowser" },
+    "5432": { "label": "Postgres", "onAutoForward": "ignore" }
+  }
 }

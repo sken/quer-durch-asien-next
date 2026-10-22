@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { apiUrl } from '@/lib/api';
 
 interface Post {
     ID: string;
@@ -32,7 +33,7 @@ function getLegacyLink(postDateStr: string, slug: string) {
 }
 
 async function getPosts(page: number): Promise<FetchResponse> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts?limit=8&page=${page}`, {
+    const res = await fetch(apiUrl(`/posts?limit=8&page=${page}`), {
         cache: 'no-store', // Ensures fresh data
     });
     if (!res.ok) {

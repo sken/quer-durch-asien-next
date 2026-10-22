@@ -1,14 +1,16 @@
 import {FastifyInstance} from 'fastify';
-import { PrismaClient } from '../generated/client/client';
 import {colorsModel as Color} from '../generated/client/models';
 
 import {colorSchema} from "../schemas/color.schema";
-
-const prisma = new PrismaClient();
+import {requireAdmin} from "../utils/auth";
+import {isNumericId} from "../utils/query";
 
 export function serializeBigInt(obj: any): any {
     if (Array.isArray(obj)) {
         return obj.map(serializeBigInt);
+    } else if (obj !== null && typeof obj === 'object' && typeof obj.toJSON === 'function') {
+        // Date -> ISO string, Prisma.Decimal -> numeric string
+        return obj.toJSON();
     } else if (obj !== null && typeof obj === 'object') {
         const newObj: any = {};
         for (const key in obj) {
@@ -21,20 +23,27 @@ export function serializeBigInt(obj: any): any {
 }
 
 export default async function colorsRoutes(fastify: FastifyInstance) {
+    const prisma = fastify.prisma;
 
     // Alle Farben
     fastify.get('/', async (request, reply) => {
         const allColors = await prisma.colors.findMany();
-        return allColors;
+        return serializeBigInt(allColors);
     });
 
     // Einzelne Farbe
     fastify.get('/:id', async (request, reply) => {
         const {id} = request.params as { id: string };
+        if (!isNumericId(id)) {
+            return reply.status(400).send({message: 'Invalid id.'});
+        }
         const color = await prisma.colors.findUnique({
             where: {id: BigInt(id)},
         });
-        return color;
+        if (!color) {
+            return reply.status(404).send({message: 'Color not found.'});
+        }
+        return serializeBigInt(color);
     });
 
     fastify.get('/random', {
@@ -56,29 +65,35 @@ export default async function colorsRoutes(fastify: FastifyInstance) {
     });
 
     // Neue Farbe anlegen
-    fastify.post('/', async (request, reply) => {
+    fastify.post('/', {preHandler: requireAdmin}, async (request, reply) => {
         const data = request.body as Color;
         const newColor = await prisma.colors.create({data});
-        return newColor;
+        return serializeBigInt(newColor);
     });
 
     // Farbe aktualisieren
-    fastify.put('/:id', async (request, reply) => {
+    fastify.put('/:id', {preHandler: requireAdmin}, async (request, reply) => {
         const {id} = request.params as { id: string };
+        if (!isNumericId(id)) {
+            return reply.status(400).send({message: 'Invalid id.'});
+        }
         const data = request.body as Partial<Color>;
         const updatedColor = await prisma.colors.update({
             where: {id: BigInt(id)},
             data,
         });
-        return updatedColor;
+        return serializeBigInt(updatedColor);
     });
 
     // Farbe löschen
-    fastify.delete('/:id', async (request, reply) => {
+    fastify.delete('/:id', {preHandler: requireAdmin}, async (request, reply) => {
         const {id} = request.params as { id: string };
+        if (!isNumericId(id)) {
+            return reply.status(400).send({message: 'Invalid id.'});
+        }
         const deletedColor = await prisma.colors.delete({
             where: {id: BigInt(id)},
         });
-        return deletedColor;
+        return serializeBigInt(deletedColor);
     });
 }

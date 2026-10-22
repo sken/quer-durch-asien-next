@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { apiUrl } from '@/lib/api';
 
 interface ImageItem {
     id: number;
@@ -24,7 +25,7 @@ interface FetchResponse {
 }
 
 async function getTagImages(tag: string, page: number): Promise<FetchResponse> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/images?tag=${tag}&limit=24&page=${page}`, {
+    const res = await fetch(apiUrl(`/images?tag=${tag}&limit=24&page=${page}`), {
         cache: 'no-store',
     });
     if (!res.ok) {

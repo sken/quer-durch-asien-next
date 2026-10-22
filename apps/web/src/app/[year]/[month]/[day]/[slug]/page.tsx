@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import CommentForm from './CommentForm';
+import { apiUrl } from '@/lib/api';
 
 interface Post {
     ID: string;
@@ -13,14 +14,13 @@ interface Post {
 interface Comment {
     comment_ID: string;
     comment_author: string;
-    comment_author_email: string;
     comment_author_url: string;
     comment_date: string;
     comment_content: string;
 }
 
 async function getPostBySlug(slug: string): Promise<Post | null> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/by-slug/${slug}`, {
+    const res = await fetch(apiUrl(`/posts/by-slug/${slug}`), {
         cache: 'no-store',
     });
     if (res.status === 404) {
@@ -33,7 +33,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
 }
 
 async function getPostComments(postId: string): Promise<Comment[]> {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/posts/${postId}/comments`, {
+    const res = await fetch(apiUrl(`/posts/${postId}/comments`), {
         cache: 'no-store',
     });
     if (!res.ok) {
@@ -116,11 +116,11 @@ export default async function BlogPostPage(props: {
                                     <div key={comment.comment_ID} className="bg-gray-50 rounded-lg p-5 border border-gray-100">
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="font-semibold text-gray-900">
-                                                {comment.comment_author_url ? (
+                                                {/^https?:\/\//i.test(comment.comment_author_url || '') ? (
                                                     <a 
                                                         href={comment.comment_author_url} 
                                                         target="_blank" 
-                                                        rel="noopener noreferrer"
+                                                        rel="nofollow ugc noopener noreferrer"
                                                         className="hover:underline text-blue-600"
                                                     >
                                                         {comment.comment_author}

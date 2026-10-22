@@ -3,6 +3,7 @@
 import ColorPicker from '@sken/color-picker/ColorPicker';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiUrl } from '@/lib/api';
 
 export default function AlbumFarbenPage() {
     const [color, setColor] = useState('#ffffff');
@@ -23,7 +24,7 @@ export default function AlbumFarbenPage() {
         const fetchImages = async () => {
             const { r, g, b } = hexToRgb(color);
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.quer-durch-asien.de'}/images?r=${r}&g=${g}&b=${b}&page=${page}&limit=18`);
+                const response = await fetch(apiUrl(`/images?r=${r}&g=${g}&b=${b}&page=${page}&limit=18`));
                 const data = await response.json();
                 setImages(data.images || []);
                 setPagination(data.pagination || { page: 1, pages: 1, total: 0 });
