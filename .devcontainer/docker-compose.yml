@@ -1,0 +1,27 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    # Share the database's network so Postgres is reachable on localhost:5432
+    network_mode: service:db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quer-durch-asien
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/qda_test
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quer-durch-asien
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+
+volumes:
+  postgres-data:

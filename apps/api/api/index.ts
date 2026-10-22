@@ -1,5 +1,13 @@
 import Fastify from "fastify";
 
+// Load apps/api/.env for local development; variables already set win.
+// (The prisma-client generator no longer reads .env by itself.)
+try {
+    process.loadEnvFile();
+} catch {
+    // no .env file: rely on the real environment (Vercel, Docker, CI)
+}
+
 const app = Fastify({
     logger: false,
 });
