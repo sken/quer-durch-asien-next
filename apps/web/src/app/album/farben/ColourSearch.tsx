@@ -16,6 +16,19 @@ const PRESETS: { name: string; rgb: [number, number, number] }[] = [
   { name: "Grün", rgb: [60, 110, 50] },
 ];
 
+/** The picker's rainbow bar: 840 px for 360 degrees, the handle snaps every 42 px. */
+const HUE_WIDTH = 840;
+const HUE_STEP = 42;
+
+/** Full saturation and brightness, as the picker's main shade. */
+function hueToRgb(h: number): [number, number, number] {
+  const f = (n: number) => {
+    const k = (n + h / 60) % 6;
+    return Math.round(255 * (1 - Math.max(0, Math.min(k, 4 - k, 1))));
+  };
+  return [f(5), f(3), f(1)];
+}
+
 function fmtDay(day: string) {
   const [y, m, d] = day.split("-");
   return `${d}.${m}.${y}`;
@@ -35,6 +48,7 @@ export default function ColourSearch() {
   const userPicking = useRef(false);
   const rgbRef = useRef(rgb);
   rgbRef.current = rgb;
+  const stencilRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fromUrl = parseRgbParam(window.location.search);
@@ -68,6 +82,34 @@ export default function ColourSearch() {
     [choose],
   );
 
+  // The picker's hue handle only moves its shade row and reports nothing, so
+  // follow it here: tint the stroke while dragging, search on release.
+  useEffect(() => {
+    const stencil = stencilRef.current;
+    const handle = stencil?.querySelector<HTMLElement>(":scope > div > div:first-child > div");
+    if (!stencil || !handle) return;
+    const handleX = () => Math.min(HUE_WIDTH, Math.max(0, new DOMMatrixReadOnly(getComputedStyle(handle).transform).m41));
+    const onMove = () => stencil.style.setProperty("--picked", `hsl(${(handleX() / HUE_WIDTH) * 360} 100% 50%)`);
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      // the handle snaps to steps of 18 degrees, like the picker's own shade row
+      const next = hueToRgb((Math.round(handleX() / HUE_STEP) * HUE_STEP * 360) / HUE_WIDTH);
+      stencil.style.setProperty("--picked", rgbToHex(...next));
+      if (next.join() !== rgbRef.current.join()) choose(next, true);
+    };
+    const onDown = () => {
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", onUp);
+    };
+    handle.addEventListener("mousedown", onDown);
+    return () => {
+      handle.removeEventListener("mousedown", onDown);
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+  }, [choose]);
+
   const results = useMemo(() => (index ? searchByColour(index, ...rgb) : []), [index, rgb]);
   const hex = rgbToHex(...rgb);
   const name = PRESETS.find((p) => p.rgb.join() === rgb.join())?.name;
@@ -77,6 +119,7 @@ export default function ColourSearch() {
       <section className="stroke" aria-label="Farbe wählen">
         <div className="stencil-scroll">
           <div
+            ref={stencilRef}
             className="stencil"
             style={{ "--picked": hex } as React.CSSProperties}
             onPointerDown={() => (userPicking.current = true)}
