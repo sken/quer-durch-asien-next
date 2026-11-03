@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@sken/color-picker>react': 19.1.0
-
 importers:
 
   .:
@@ -64,8 +61,8 @@ importers:
   apps/web:
     dependencies:
       '@sken/color-picker':
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: ^3.0.0
+        version: 3.0.0(react@19.1.0)
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -1596,8 +1593,10 @@ packages:
       '@sinonjs/commons': 3.0.1
     dev: true
 
-  /@sken/color-picker@2.1.0:
-    resolution: {integrity: sha512-wgLS0ixIIW4RfOveJ80SXUAomHkKDpZ1wG5vGTRGj/w7pHo1bevpxwdyrZVBrB8vecQY1iwoqF3PtZry9cyKKQ==}
+  /@sken/color-picker@3.0.0(react@19.1.0):
+    resolution: {integrity: sha512-PaNrIP7yjcFkuCdQG+nj+zf0gANXs4jsiRG1A9JFlwPRRNQlgcyPzfcEtWe286X4z2mbI2MrVmTreaPSq1Z3ww==}
+    peerDependencies:
+      react: ^18.0.0 || ^19.0.0
     dependencies:
       react: 19.1.0
     dev: false
