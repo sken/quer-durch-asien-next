@@ -1,21 +1,15 @@
 import type { NextConfig } from "next";
 
+// Fully static site: `next build` writes plain HTML/CSS/JS to `out/`, which
+// any web server (Vercel now, All-Inkl later) can serve. No server code.
 const nextConfig: NextConfig = {
-  // Keep legacy CodeIgniter URLs working (bookmarks, search engines).
-  async redirects() {
-    return [
-      {
-        source: "/blog/page/:page(\\d+)",
-        destination: "/blog?page=:page",
-        permanent: true,
-      },
-      {
-        source: "/album/tag/:tag",
-        destination: "/tag/:tag",
-        permanent: true,
-      },
-    ];
-  },
+  output: "export",
+  // Folders with index.html (`/bild/IMG_2801/index.html`), so URLs work on
+  // any static host without rewrite rules.
+  trailingSlash: true,
+  images: { unoptimized: true },
+  // Legacy-URL redirects cannot live here with `output: "export"`; they go
+  // into the web server config (.htaccess) at cutover.
 };
 
 export default nextConfig;
