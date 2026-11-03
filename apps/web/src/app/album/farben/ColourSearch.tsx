@@ -75,12 +75,15 @@ export default function ColourSearch() {
   return (
     <>
       <section className="stroke" aria-label="Farbe wählen">
-        <div
-          className="picker-box"
-          onPointerDown={() => (userPicking.current = true)}
-          onKeyDown={() => (userPicking.current = true)}
-        >
-          <ColorPicker initialRGB={seed} onColorSelect={onPicked} />
+        <div className="stencil-scroll">
+          <div
+            className="stencil"
+            style={{ "--picked": hex } as React.CSSProperties}
+            onPointerDown={() => (userPicking.current = true)}
+            onKeyDown={() => (userPicking.current = true)}
+          >
+            <ColorPicker initialRGB={seed} onColorSelect={onPicked} />
+          </div>
         </div>
         <div className="presets" role="group" aria-label="Schnellauswahl">
           {PRESETS.map((p) => (
