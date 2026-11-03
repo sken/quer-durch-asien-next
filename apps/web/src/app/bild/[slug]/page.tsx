@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { countryDays, countryName, getPhoto, getPhotos, isTravelDay, keywordsOf, paletteOf, routeOfDay } from "@/lib/data";
+import { countryDays, countryName, getPhoto, getPhotos, isTravelDay, keywordsOf, paletteOf, placesOf, routeOfDay } from "@/lib/data";
 import { longDate, num, photoUrl, time } from "@/lib/format";
-import NearbyPlaces from "./NearbyPlaces";
 import PhotoMap from "./PhotoMap";
 
 export const dynamicParams = false;
@@ -37,6 +36,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ slug: st
   const strip = [all[idx - 2], all[idx - 1], all[idx + 1], all[idx + 2]].filter(Boolean);
   const portrait = p.height > p.width;
   const title = p.description ?? p.title;
+  const places = placesOf(p.id);
 
   return (
     <div className="wrap page" style={{ gap: 28 }}>
@@ -105,7 +105,25 @@ export default async function PhotoPage({ params }: { params: Promise<{ slug: st
               <div><dt>Längengrad</dt><dd>{num(Math.abs(p.gps.lng), 4)}° {p.gps.lng >= 0 ? "O" : "W"}</dd></div>
               {p.gps.alt !== null ? <div><dt>Höhe</dt><dd>{num(p.gps.alt)} m</dd></div> : null}
             </dl>
-            <NearbyPlaces lat={p.gps.lat} lng={p.gps.lng} />
+            {places ? (
+              <>
+                <div className="places">
+                  {places.near.length > 0 ? (
+                    <div>
+                      <h3>Orte in der Nähe</h3>
+                      <ul>{places.near.map(([n, d]) => <li key={n}>{n} ({num(d, 2)} km)</li>)}</ul>
+                    </div>
+                  ) : null}
+                  {places.wiki.length > 0 ? (
+                    <div>
+                      <h3>Bei Wikipedia</h3>
+                      <ul>{places.wiki.map(([t, d, url]) => <li key={t}><a href={`https://${url}`}>{t}</a> ({num(d, 2)} km)</li>)}</ul>
+                    </div>
+                  ) : null}
+                </div>
+                <p className="small">Ortsangaben aus der <a href="https://www.geonames.org/">GeoNames</a>-Datenbank (CC BY 4.0)</p>
+              </>
+            ) : null}
           </section>
         ) : null}
       </div>

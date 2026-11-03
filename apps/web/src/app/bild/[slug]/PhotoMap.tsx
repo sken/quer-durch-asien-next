@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import "leaflet/dist/leaflet.css";
 
-/** Small Leaflet + OpenStreetMap map: the day's GPS track and where the photo was taken. */
+/**
+ * Small Leaflet + OpenStreetMap map: the day's GPS track and where the photo
+ * was taken. Map tiles come from the OpenStreetMap servers, so nothing is
+ * loaded from there until the visitor asks for the map.
+ */
 export default function PhotoMap({ lat, lng, track }: { lat: number; lng: number; track: [number, number][] }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
+    if (!show) return;
     let map: import("leaflet").Map | undefined;
     let cancelled = false;
     import("leaflet").then((L) => {
@@ -29,7 +35,15 @@ export default function PhotoMap({ lat, lng, track }: { lat: number; lng: number
       cancelled = true;
       map?.remove();
     };
-  }, [lat, lng, track]);
+  }, [show, lat, lng, track]);
 
+  if (!show) {
+    return (
+      <div className="mini-map map-consent">
+        <button type="button" className="btn" onClick={() => setShow(true)}>Karte anzeigen</button>
+        <p className="small">Lädt Kartenkacheln von OpenStreetMap; dabei wird die IP-Adresse an die OpenStreetMap Foundation übertragen.</p>
+      </div>
+    );
+  }
   return <div ref={ref} className="mini-map" role="img" aria-label="Karte mit dem Aufnahmeort und der Route des Tages" />;
 }
