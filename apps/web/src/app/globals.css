@@ -210,8 +210,25 @@ img { max-width: 100%; }
 .small { font-size: 13px; color: var(--muted); margin: 0; }
 
 /* colour search */
-.stroke { background: url("/site/colour-stroke.png") no-repeat center / 100% 100%; padding: 48px 6% 40px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.picker-box { background: #fff; padding: 12px; border-radius: 12px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); max-width: 100%; overflow-x: auto; }
+/* The paint stroke from the 2008 site, filled with the chosen colour. The
+   original PNG is a stencil (transparent stroke, opaque paper around it);
+   colour-stroke-mask.png is its inverse, used as a CSS mask, so only the
+   stroke itself is coloured and it sits directly on the page. Native size;
+   the picker bars sit inside the stroke's band (y 35-149 of 196). Scrolls
+   sideways on phones, because the picker itself is 840 px wide. */
+.stroke { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.stencil-scroll { max-width: 100%; overflow-x: auto; }
+.stencil { position: relative; width: 900px; height: 196px; padding: 72px 30px 0; }
+.stencil::before {
+  content: ""; position: absolute; inset: 0;
+  background: var(--picked, #c8281e);
+  -webkit-mask: url("/site/colour-stroke-mask.png") no-repeat 0 0;
+  mask: url("/site/colour-stroke-mask.png") no-repeat 0 0;
+  transition: background-color 0.25s ease;
+}
+.stencil > div { position: relative; }
+/* the picker's own rgb/hex output: the page shows the colour below already */
+.stencil > div > ul { display: none; }
 .presets { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .preset {
   display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 18px; border-radius: 999px;
