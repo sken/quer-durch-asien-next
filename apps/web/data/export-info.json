@@ -1,0 +1,15 @@
+{
+  "images": 2551,
+  "imagesWithGps": 1384,
+  "keywords": 179,
+  "keywordLinks": 5728,
+  "imagesWithColors": 2551,
+  "routeDays": 42,
+  "routePoints": {
+    "stored": 16457,
+    "exported": 7448
+  },
+  "days": 46,
+  "diaryEntries": 46,
+  "blogPosts": 68
+}

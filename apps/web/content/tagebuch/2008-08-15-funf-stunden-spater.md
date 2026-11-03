@@ -1,0 +1,10 @@
+---
+generatedBy: "quer-durch-asien export"
+title: "Fünf Stunden später"
+date: "2008-08-15T13:08:18"
+day: "2008-08-15"
+slug: "funf-stunden-spater"
+legacyUrl: "/tagebuch/funf-stunden-spater"
+---
+
+Fünf Stunden später. Letzte Dusche. Letzer O-Saft. Und ab jetzt heißt es: „egem b Mockbe“!<br />Im Flugzeug lecker Rührei bzw. Pancakes. Das Essen hätten wir beinahe wiedergesehen.Suche-Bator!<br />Massenklogang. Konsequenz: Schlange bei Visa-Überprüfung.Angst vor Visatypen.<br />Drängelnde Oma, die frecherweise noch nicht einmal ihre Imigration Card ausgefüllt hatte.<br />Puh wir sind drin. Gespräch ist auch da!<br />2. Klogang. Tickets kaufen für den Expresszug.<br />3. Klogang. Fahrt vorbei an russischen Plattenbauten. <br />U-Bahn finden, U-Bahn-Tickets kaufen und nicht durch die Schranke kommen.<br />Linie entziffern. 5 Stationen Schwitzen.Mit dem Riesenrucksack 3 Leute aus dem Weg räumen. <br />U-Bahn-Station mit Kronleuchtern und Ausgang, aber kein Eingang. <br />Wo ist Gleis 1 und die Gepäckausgabe? Freundlicher Mann "Sergej" nahm sogar den Hut. Einfach ein symphatischer Kerl. <br />Eingang != Ausgang. Suche-Eingang. <br />Metro-Fahrt; Roter Platz. Eingang Kreml: Ortszeit 16:32. 2 Minuten zu spät für den Kreml. Also außen rum. <br />Dafür Besuch der Basilius-Kathedrale mit den lustigen Türmen = Kirche ohne Innenraum. <br />Suche-Essen => GUM. Suche-Geld. Bankautomat streikt, wir wollten zu viel. Lecker italienisches Essen von Papptellern. <br />Geschäfte, in denen niemand einkauft. Marsch über die Brücke um den Kreml besser zu sehen und dann zurück zum Bahnhof. <br />Essen suchen. Wir haben die russische Hartwurst! Erstkontakt mit Olga. <br />Gleis 3 heißt die Devise! Schock!!! Wir passen nicht zu viert mit Rucksack auf dem Rücken ins Abteil! Wir sitzen auf dem Gang! <br />Frustration macht sich breit! Jeder darf einzeln das Gepäck sortieren. <br />Raus aus den Stinkeschuhen. Cool, Lunchpaket! <br />Essen auf dem Gang. Cool, wieder Essen. <br />Schlafen. Von Stevie passen nur ¾ ins Bett.
