@@ -1,0 +1,11 @@
+---
+generatedBy: "quer-durch-asien export"
+title: "Quasi am Marienplatz Kathmandus"
+date: "2008-09-24T16:37:15"
+slug: "quasi-am-marienplatz-kathmandus"
+legacyUrl: "/2008/09/24/quasi-am-marienplatz-kathmandus"
+categories: ["nepal"]
+tags: ["kathmandu"]
+---
+
+<p>Tiefpunkttag. Wir wachen von den Geräuschen draußen auf, man denkt die ganze Stadt ist bereits aktiv. Frühstücken auf dem Hoteldach funktioniert nicht, man will uns keine Karte bringen. Deshalb ziehen wir los, Richtung Dhurbar Square. Irgendwo wird sich schon etwas zum Frühstücken finden – von wegen! Als wir schon fast am Platz angekommen sind fängt es zu regnen an. Erleichtert gehen wir in ein Lokal, doch wir haben wieder Pech: Obwohl die Bedienung fleißig die Bstellung auf die Hand geschrieben hat, bekommen wir ewig nichts. Dann gesüßten Tee und ein Mini-Sandwich mit süßem Toast. Genervt gehen wir wieder. Am Platz angekommen latschen wir etwas planlos umher. Der stärkere Regen treibt uns ins Museum. Mit viel Galgenhumor schauen wir uns die Bilder mit finster schauenden Königen an. Dazu die personal Schreibmaschine, das personal Bett und nicht zu vergessen... der personal Ventilator. Vom personal Jesus keine Spur. Bei den nächsten Räumen wird wenigstens die Aussicht besser. Stevie entdeckt, dass die Thronfolge lückenlos ist, wer hätte das gedacht. Nach dem Museum direkt weiter zum Mittagessen. Quasi am Marienplatz Kathmandus. Preise doppelt so hoch wie Tags zuvor, dauert wieder ewig. Wir entschließen uns den Tag auf Grund des Regens als Gammeltag zu deklarieren. Beim Rückweg zum Hotel kaufen wir eben schnell sieben Handtaschen. Dann geht's von Unterstellmöglichkeit zu Unterstellmöglichkeit und wir erfahren, dass die Gastronomie in Nepal streikt. Ein Cafe hat trotzdem offen und bei einer Runde Kniffel vergeht die Zeit. Nahtloser Übergang zum Abendessen. Mit viel diplomatischem Geschick lenkt uns Stevie zum Pizzaessen. Lecker, bei tollem Ambiente. Katrin verabschiedet sich und der Rest nimmt im Steak-House noch einen Schlummertrunk zu sich, ehe auch dieser schlafen geht.</p>
