@@ -6,3 +6,8 @@ dist
 
 .DS_Store
 .vercel
+
+# generated before each build from apps/web/data (scripts/public-data.mjs)
+apps/web/public/data/
+# static export output
+apps/web/out/

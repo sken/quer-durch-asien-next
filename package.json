@@ -21,5 +21,10 @@
   "packageManager": "pnpm@8.15.5",
   "engines": {
     "node": ">=18"
+  },
+  "pnpm": {
+    "overrides": {
+      "@sken/color-picker>react": "19.1.0"
+    }
   }
 }

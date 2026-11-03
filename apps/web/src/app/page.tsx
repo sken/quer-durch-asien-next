@@ -1,103 +1,79 @@
-'use client'
+import Link from "next/link";
+import { COUNTRIES, getExportInfo, getPhotos } from "@/lib/data";
+import { num, shortDate } from "@/lib/format";
+import { isSoon } from "@/lib/sections";
+import RandomPhotos, { type Candidate } from "./RandomPhotos";
 
-import ColorPicker from '@sken/color-picker/ColorPicker';
-import {useState, useEffect} from "react";
-import Link from 'next/link';
-import { apiUrl } from '@/lib/api';
+/** A start-page card; sections that are not built yet render without a link. */
+function Card({ href, kind, children }: { href: string; kind: string; children: React.ReactNode }) {
+  if (isSoon(href)) {
+    return <div className={`card card-${kind} soon`} title="kommt bald"><span>{children} <small>(bald)</small></span></div>;
+  }
+  return <Link href={href} className={`card card-${kind}`}><span>{children}</span></Link>;
+}
 
+export default function StartPage() {
+  const photos = getPhotos();
+  const info = getExportInfo();
+  const days = info.days; // the 46 day galleries; one photo is dated 2009 (edited later)
 
-export default function Home() {
+  // Random-photo candidates: up to 24 landscape photos per country.
+  const groups: Candidate[][] = COUNTRIES.map((c) =>
+    photos
+      .filter((p) => p.country === c.slug && p.width > p.height)
+      .filter((_, i, all) => i % Math.max(1, Math.floor(all.length / 24)) === 0)
+      .slice(0, 24)
+      .map((p) => ({ slug: p.slug, country: p.country, countryName: c.name, file: p.file, date: shortDate(p.date) })),
+  );
 
-    const [color, setColor] = useState('#ffffff');
-    const [images, setImages] = useState([]);
-    const [page, setPage] = useState(1);
-
-    const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
-
-    // Function to convert hex to RGB
-    const hexToRgb = (hex: string) => {
-        const bigint = parseInt(hex.slice(1), 16);
-        const r = (bigint >> 16) & 255;
-        const g = (bigint >> 8) & 255;
-        const b = bigint & 255;
-        return { r, g, b };
-    };
-
-    useEffect(() => {
-        const fetchImages = async () => {
-            const { r, g, b } = hexToRgb(color);
-            try {
-                const response = await fetch(apiUrl(`/images?r=${r}&g=${g}&b=${b}&page=${page}`));
-                const data = await response.json();
-                setImages(data.images || []);
-                setPagination(data.pagination || { page: 1, pages: 1, total: 0 });
-            } catch (err) {
-                console.error(err);
-                setImages([]);
-            }
-        };
-
-        fetchImages();
-    }, [color, page]);
-
-
-    return (
-        <div
-            className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-
-            <div className="w-[900px] h-[196px] bg-cover bg-center bg-no-repeat flex flex-col justify-center items-center rounded-lg shadow-md" style={{ backgroundColor: '#' + color.replace('#', ''), backgroundImage: 'url(/background_colorselection.png)' }}>
-                <div className="mt-5 text-center bg-black/40 text-white px-4 py-2 rounded backdrop-blur-sm">
-                    <p className="font-mono font-bold mb-2">Ausgewählte Farbe: {color}</p>
-                    <ColorPicker onColorSelect={setColor}></ColorPicker>
-                </div>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/blog" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold transition-colors">📖 Reisetagebuch</Link>
-                <Link href="/album" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold transition-colors">📸 Reisealbum</Link>
-                <Link href="/unsere-reise" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold transition-colors">🗺️ Reiseroute</Link>
-                <Link href="/packliste" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded text-sm font-semibold transition-colors">🎒 Packliste</Link>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 w-full max-w-6xl">
-                {images.map((img: { id: number; title: string; folder: string; file: string; country?: string; day?: string }) => (
-                    <div key={img.id} className="group bg-white rounded border border-gray-100 p-2 shadow-sm hover:shadow transition-shadow">
-                        <div className="relative aspect-square overflow-hidden bg-gray-100 rounded">
-                            <Link href={`/bild/${img.title}`}>
-                                <img 
-                                    src={`https://quer-durch-asien.de/assets/images/final/${img.folder}/thumb2/${img.file}`} 
-                                    alt={img.title} 
-                                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                />
-                            </Link>
-                        </div>
-                        <div className="mt-2 text-xs text-gray-500 truncate">
-                            <p className="font-semibold text-gray-900 truncate">{img.title}</p>
-                            <p className="capitalize">{img.country}</p>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {pagination.pages > 1 && (
-                <div className="flex items-center gap-4 mt-8">
-                    <button 
-                        onClick={() => setPage(prev => Math.max(1, prev - 1))}
-                        disabled={page <= 1}
-                        className="px-4 py-2 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
-                    >
-                        Previous
-                    </button>
-                    <span className="text-sm text-gray-600">Page {page} of {pagination.pages}</span>
-                    <button 
-                        onClick={() => setPage(prev => Math.min(pagination.pages, prev + 1))}
-                        disabled={page >= pagination.pages}
-                        className="px-4 py-2 border border-gray-300 rounded text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:hover:bg-white"
-                    >
-                        Next
-                    </button>
-                </div>
-            )}
+  return (
+    <div className="wrap page stack-lg">
+      <section className="intro">
+        <div>
+          <p className="hand">oder auch Hallo.</p>
+          <h1>Сайн уу?</h1>
+          <p>Wer sich denkt, dass sind aber komische Buchstaben, sollte zunächst versuchen, sie auszusprechen, dann kommt einem das Geschriebene doch relativ einfach vor.</p>
+          <p>Quer-durch-Asien.de ist eine Seite, die mit Inhalt glänzt, welcher üblicherweise nach einer Reise im Schuhkarton landet. Um das zu verhindern und natürlich auch mit unserer Reise protzen zu können, ist diese Seite entstanden.</p>
+          <p>Schnell gesagt fand die Reise vom 15.8. bis 29.9.2008 statt. Von München nach Delhi in 6 Wochen auf russischen Gleisen, über mongolische „Straßen“, in chinesischer Überwachung, über tibetische Pässe, durch nepalesischen Regen und indischen Nepp.</p>
         </div>
-    );
+        <figure>
+          <img src="/site/start-photo.png" width={552} height={370} alt="Die vier Reisenden springen vor einer Bergkulisse in die Luft" />
+        </figure>
+      </section>
+
+      <section className="stats" aria-label="Die Reise in Zahlen">
+        <div className="stat"><strong>{COUNTRIES.length}</strong><span>Länder</span></div>
+        <div className="stat"><strong>{days}</strong><span>Tage, 15.8.–29.9.2008</span></div>
+        <div className="stat"><strong>{num(info.images)}</strong><span>Fotos</span></div>
+        <div className="stat"><strong>{num(info.routePoints.stored)}</strong><span>GPS-Punkte</span></div>
+      </section>
+
+      <section aria-labelledby="explore">
+        <h2 id="explore" style={{ marginBottom: 24 }}>Zum Sehen, Lesen und große Augen machen</h2>
+        <div className="cards">
+          <Link href="/bilder/russland/" className="card card-images"><span><strong>Bilder</strong>, Bilder und auch Fotos</span></Link>
+          <Card href="/unsere-reise/" kind="route">Die <strong>Reiseroute</strong>: links, rechts, rauf und runter</Card>
+          <Card href="/tagebuch/" kind="diary">Das <strong>Tagebuch</strong>: fleißig geschrieben, jeden einzelnen Tag</Card>
+          <Card href="/blog/" kind="blog">Der <strong>Reiseblog</strong>: ja, in der Mongolei gibt es auch Internet</Card>
+        </div>
+      </section>
+
+      <section className="sheet teaser" aria-labelledby="routeTitle">
+        <div>
+          <h2 id="routeTitle" style={{ marginBottom: 12 }}>Unsere Reise</h2>
+          <p style={{ margin: "0 0 20px" }}>Moskau, Irkutsk, Baikalsee, Ulaanbaatar, die Gobi, Peking, Lhasa, Kathmandu, Delhi: der ganze Weg, aufgezeichnet von einem GPS-Logger, Tag für Tag zum Nachfahren.</p>
+          {isSoon("/unsere-reise/") ? <span className="muted">Die interaktive Karte kommt bald.</span> : <Link href="/unsere-reise/" className="btn">Route ansehen</Link>}
+        </div>
+        <img src="/site/route-map.png" width={800} height={380} alt="Karte der GPS-Route von Moskau über die Mongolei und Peking bis Nepal" loading="lazy" />
+      </section>
+
+      <section aria-labelledby="randomTitle">
+        <div className="title-row" style={{ justifyContent: "space-between", marginBottom: 20 }}>
+          <h2 id="randomTitle">Zufallsbilder</h2>
+          <span className="hand" style={{ fontSize: 24 }}>eins aus jedem Land</span>
+        </div>
+        <RandomPhotos groups={groups} />
+      </section>
+    </div>
+  );
 }
