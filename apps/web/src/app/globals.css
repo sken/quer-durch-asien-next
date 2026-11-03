@@ -229,10 +229,6 @@ img { max-width: 100%; }
 .stencil > div { position: relative; }
 /* the picker's own rgb/hex output: the page shows the colour below already */
 .stencil > div > ul { display: none; }
-/* The shade row is 13 x 64 px minus the end cells (824 px) under an 840 px
-   rainbow: stretch it to the rainbow's width so both bars line up. */
-.stencil > div > div:nth-child(2) > ul { display: flex; min-width: 0; width: 840px; }
-.stencil > div > div:nth-child(2) > ul > li { float: none; flex: 0 0 calc(840px / 13); width: auto; margin-left: 0; box-sizing: border-box; }
 .presets { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 .preset {
   display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 18px; border-radius: 999px;

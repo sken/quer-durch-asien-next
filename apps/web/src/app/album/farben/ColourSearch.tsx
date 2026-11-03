@@ -1,6 +1,6 @@
 "use client";
 
-import ColorPicker from "@sken/color-picker/ColorPicker";
+import { ColorPicker } from "@sken/color-picker/ColorPicker";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PhotoCard from "@/components/PhotoCard";
 import { hexToRgb, parseRgbParam, rgbToHex, searchByColour, type IndexRow } from "./colourSearch";
@@ -16,19 +16,6 @@ const PRESETS: { name: string; rgb: [number, number, number] }[] = [
   { name: "Grün", rgb: [60, 110, 50] },
 ];
 
-/** The picker's rainbow bar: 840 px for 360 degrees, the handle snaps every 42 px. */
-const HUE_WIDTH = 840;
-const HUE_STEP = 42;
-
-/** Full saturation and brightness, as the picker's main shade. */
-function hueToRgb(h: number): [number, number, number] {
-  const f = (n: number) => {
-    const k = (n + h / 60) % 6;
-    return Math.round(255 * (1 - Math.max(0, Math.min(k, 4 - k, 1))));
-  };
-  return [f(5), f(3), f(1)];
-}
-
 function fmtDay(day: string) {
   const [y, m, d] = day.split("-");
   return `${d}.${m}.${y}`;
@@ -39,13 +26,10 @@ export default function ColourSearch() {
   const [failed, setFailed] = useState(false);
   const [rgb, setRgb] = useState<[number, number, number]>(PRESETS[0].rgb);
   const [shown, setShown] = useState(PAGE);
-  // The colour the picker starts from. Kept separate from `rgb` and only
-  // replaced on purpose (preset, URL): the picker resets itself whenever this
-  // object changes, so a new object per render would loop forever.
+  // The colour the picker is moved to. Kept separate from `rgb` and only
+  // replaced on purpose (preset, URL): picks made inside the picker must not
+  // move it back.
   const [seed, setSeed] = useState({ r: PRESETS[0].rgb[0], g: PRESETS[0].rgb[1], b: PRESETS[0].rgb[2] });
-  // The picker reports a colour on mount and on every internal change; only
-  // colours the user picks inside it (pointer or keyboard) change the search.
-  const userPicking = useRef(false);
   const rgbRef = useRef(rgb);
   rgbRef.current = rgb;
   const stencilRef = useRef<HTMLDivElement>(null);
@@ -66,7 +50,6 @@ export default function ColourSearch() {
     setRgb(next);
     setShown(PAGE);
     if (!fromPicker) {
-      userPicking.current = false;
       setSeed({ r: next[0], g: next[1], b: next[2] }); // move the picker to the new colour
     }
     const url = new URL(window.location.href);
@@ -77,38 +60,10 @@ export default function ColourSearch() {
   const onPicked = useCallback(
     (h: string) => {
       const v = hexToRgb(h);
-      if (userPicking.current && v && v.join() !== rgbRef.current.join()) choose(v, true);
+      if (v && v.join() !== rgbRef.current.join()) choose(v, true);
     },
     [choose],
   );
-
-  // The picker's hue handle only moves its shade row and reports nothing, so
-  // follow it here: tint the stroke while dragging, search on release.
-  useEffect(() => {
-    const stencil = stencilRef.current;
-    const handle = stencil?.querySelector<HTMLElement>(":scope > div > div:first-child > div");
-    if (!stencil || !handle) return;
-    const handleX = () => Math.min(HUE_WIDTH, Math.max(0, new DOMMatrixReadOnly(getComputedStyle(handle).transform).m41));
-    const onMove = () => stencil.style.setProperty("--picked", `hsl(${(handleX() / HUE_WIDTH) * 360} 100% 50%)`);
-    const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-      // the handle snaps to steps of 18 degrees, like the picker's own shade row
-      const next = hueToRgb((Math.round(handleX() / HUE_STEP) * HUE_STEP * 360) / HUE_WIDTH);
-      stencil.style.setProperty("--picked", rgbToHex(...next));
-      if (next.join() !== rgbRef.current.join()) choose(next, true);
-    };
-    const onDown = () => {
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", onUp);
-    };
-    handle.addEventListener("mousedown", onDown);
-    return () => {
-      handle.removeEventListener("mousedown", onDown);
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-  }, [choose]);
 
   const results = useMemo(() => (index ? searchByColour(index, ...rgb) : []), [index, rgb]);
   const hex = rgbToHex(...rgb);
@@ -122,10 +77,10 @@ export default function ColourSearch() {
             ref={stencilRef}
             className="stencil"
             style={{ "--picked": hex } as React.CSSProperties}
-            onPointerDown={() => (userPicking.current = true)}
-            onKeyDown={() => (userPicking.current = true)}
           >
-            <ColorPicker initialRGB={seed} onColorSelect={onPicked} />
+            {/* live tint while the hue handle is dragged; the search runs on release */}
+            <ColorPicker initialRGB={seed} onColorSelect={onPicked}
+              onColorPreview={(h) => stencilRef.current?.style.setProperty("--picked", `#${h}`)} />
           </div>
         </div>
         <div className="presets" role="group" aria-label="Schnellauswahl">
