@@ -81,15 +81,25 @@ function countryOfDay(day: string): CountrySlug | null {
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
 }
 
-export function plainText(html: string): string {
-  return html
-    .replace(/<div class="qda-day-gallery"[^>]*><\/div>/g, " ")
-    .replace(/<br\s*\/?>/g, " ")
-    .replace(/<[^>]+>/g, "")
+/** Titles and excerpts are rendered as text, so HTML entities from WordPress are decoded. */
+export function decodeEntities(s: string): string {
+  return s
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
-    .replace(/&#0?39;/g, "'")
+    .replace(/&#0*39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&amp;/g, "&");
+}
+
+export function plainText(html: string): string {
+  return decodeEntities(
+    html
+      .replace(/<div class="qda-day-gallery"[^>]*><\/div>/g, " ")
+      .replace(/<br\s*\/?>/g, " ")
+      .replace(/<[^>]+>/g, ""),
+  )
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -131,7 +141,7 @@ export function getDiary(): DiaryEntry[] {
       const fixed = fillDayGalleries(fixLegacyHtml(html));
       return {
         slug: String(fields.slug),
-        title: String(fields.title),
+        title: decodeEntities(String(fields.title)),
         date: String(fields.date),
         day,
         tripDay: tripDayOf(day),
@@ -147,3 +157,84 @@ export function getDiary(): DiaryEntry[] {
 export function getDiaryEntry(slug: string): DiaryEntry | undefined {
   return getDiary().find((e) => e.slug === slug);
 }
+
+// ---------- blog ----------
+
+export interface BlogPost {
+  slug: string;
+  title: string;
+  date: string; // "2008-07-23T11:03:12"
+  /** "/2008/07/23/reiseblog-gestartet/": the old permalink, kept as the URL */
+  path: string;
+  /** [year, month, day, slug] for the route */
+  parts: [string, string, string, string];
+  categories: string[];
+  tags: string[];
+  html: string;
+  excerpt: string;
+}
+
+/** The old blog shows 5 posts per page; keeping that keeps /blog/page/N stable. */
+export const POSTS_PER_PAGE = 5;
+
+let blogCache: BlogPost[] | null = null;
+
+/** All blog posts, newest first (as on the old blog). */
+export function getBlog(): BlogPost[] {
+  if (!blogCache) {
+    blogCache = readDir("blog")
+      .map(({ fields, html }) => {
+        const legacy = String(fields.legacyUrl).replace(/\/$/, "");
+        const m = /^\/(\d{4})\/(\d{2})\/(\d{2})\/([^/]+)$/.exec(legacy);
+        if (!m) throw new Error(`unexpected blog URL ${legacy}`);
+        const parts: [string, string, string, string] = [m[1], m[2], m[3], m[4]];
+        return {
+          slug: String(fields.slug),
+          title: decodeEntities(String(fields.title)),
+          date: String(fields.date),
+          path: `${legacy}/`,
+          parts,
+          categories: (fields.categories as string[] | undefined) ?? [],
+          tags: (fields.tags as string[] | undefined) ?? [],
+          html: fixLegacyHtml(html),
+          excerpt: excerptOf(html, 55),
+        };
+      })
+      .sort((a, b) => b.date.localeCompare(a.date));
+  }
+  return blogCache;
+}
+
+export function getPost(year: string, month: string, day: string, slug: string): BlogPost | undefined {
+  return getBlog().find((p) => p.parts.join("/") === [year, month, day, slug].join("/"));
+}
+
+export function blogPages(): number {
+  return Math.ceil(getBlog().length / POSTS_PER_PAGE);
+}
+
+export function postsOnPage(page: number): BlogPost[] {
+  return getBlog().slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE);
+}
+
+/** Tag slug -> posts (newest first). */
+export function getTags(): Map<string, BlogPost[]> {
+  const tags = new Map<string, BlogPost[]>();
+  for (const p of getBlog()) for (const t of p.tags) tags.set(t, [...(tags.get(t) ?? []), p]);
+  return tags;
+}
+
+/** The export kept tag slugs only: "jorg-aus-luneburg" -> "jorg aus luneburg". */
+export const tagLabel = (slug: string) => decodeURIComponent(slug).replace(/-/g, " ");
+
+const CATEGORY_LABELS: Record<string, string> = {
+  zuhause: "Zuhause",
+  reiseblog: "Reiseblog",
+  russland: "Russland",
+  mongolei: "Mongolei",
+  china: "China",
+  tibet: "Tibet",
+  nepal: "Nepal",
+  indien: "Indien",
+};
+export const categoryLabel = (slug: string) => CATEGORY_LABELS[slug] ?? tagLabel(slug);
