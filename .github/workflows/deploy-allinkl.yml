@@ -1,0 +1,145 @@
+# Build the static site and upload apps/web/out to All-Inkl by rsync over SSH.
+# Same setup as the legacy repo's deploy (sken/quer-durch-asien), plus a build.
+#
+# Repository secrets (Settings > Secrets and variables > Actions):
+#   SSH_HOST, SSH_USER, SSH_PORT (optional, default 22), SSH_PRIVATE_KEY,
+#   SSH_KNOWN_HOSTS  - as in the legacy repo
+#   SSH_REMOTE_PATH  - the folder of next.quer-durch-asien.de, the real path
+#                      under /www/htdocs/<account>/ (the SSH account is chrooted)
+# The path stays in secrets: this repository is public.
+
+name: Deploy to All-Inkl
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-allinkl
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # marks a folder this workflow deployed to; only such a folder gets --delete
+  MARKER: .qda-next-site
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the static site
+        run: pnpm --filter web build
+
+      - name: Check the build output
+        working-directory: apps/web/out
+        run: |
+          for f in index.html 404.html .htaccess "$MARKER" bild/IMG_3730/index.html album/farben/index.html; do
+            test -s "$f" || { echo "::error::missing in build output: $f"; exit 1; }
+          done
+          echo "$(find . -type f | wc -l) files, $(du -sh --apparent-size . | cut -f1)"
+
+      - name: Check the secrets
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          REMOTE_PATH: ${{ secrets.SSH_REMOTE_PATH }}
+        run: |
+          missing=""
+          for v in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS REMOTE_PATH; do
+            [ -n "${!v}" ] || missing="$missing $v"
+          done
+          [ -z "$missing" ] || { echo "::error::repository secrets missing:$missing"; exit 1; }
+          case "$REMOTE_PATH" in
+            /www/htdocs/*/?*) ;;
+            *) echo "::error::SSH_REMOTE_PATH must be a folder under /www/htdocs/<account>/"; exit 1 ;;
+          esac
+
+      - name: Set up SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Check the target folder
+        id: target
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          REMOTE_PATH: ${{ secrets.SSH_REMOTE_PATH }}
+        run: |
+          remote() { ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "$@"; }
+          remote "test -d '$REMOTE_PATH'" || { echo "::error::target folder does not exist (create it in KAS)"; exit 1; }
+          # never deploy into the legacy PHP site
+          if remote "test -e '$REMOTE_PATH/index.php' || test -d '$REMOTE_PATH/system' || test -d '$REMOTE_PATH/wp'"; then
+            echo "::error::target folder contains the legacy PHP site; SSH_REMOTE_PATH is wrong"; exit 1
+          fi
+          if remote "test -f '$REMOTE_PATH/$MARKER'"; then
+            echo "Earlier deploy found: syncing with --delete"
+            echo "delete=--delete-after" >> "$GITHUB_OUTPUT"
+          elif [ -z "$(remote "ls -A '$REMOTE_PATH' | grep -v -x -e .well-known -e .htaccess")" ]; then
+            echo "Empty folder: first deploy, without --delete"
+            echo "delete=" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::target folder is not empty and was not deployed to by this workflow; empty it or check SSH_REMOTE_PATH"
+            exit 1
+          fi
+
+      - name: Sync files (rsync)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          REMOTE_PATH: ${{ secrets.SSH_REMOTE_PATH }}
+        run: |
+          # --filter 'P': keep the certificate challenge folder that KAS creates
+          rsync -rlptz --checksum --stats ${{ steps.target.outputs.delete }} \
+            --filter='P .well-known/' \
+            -e "ssh -i ~/.ssh/id_deploy -p $SSH_PORT -o StrictHostKeyChecking=yes" \
+            apps/web/out/ "$SSH_USER@$SSH_HOST:$REMOTE_PATH/"
+
+      - name: Verify deployment
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          REMOTE_PATH: ${{ secrets.SSH_REMOTE_PATH }}
+        working-directory: apps/web/out
+        run: |
+          # Compare checksums of key files (relative paths, so the secret path stays masked).
+          status=0
+          css=$(find _next/static -name '*.css' | head -1)
+          for f in index.html 404.html .htaccess bild/IMG_3730/index.html album/farben/index.html "$css"; do
+            local_sum=$(sha256sum "$f" | cut -d' ' -f1)
+            remote_sum=$(ssh -i ~/.ssh/id_deploy -p "$SSH_PORT" -o StrictHostKeyChecking=yes \
+              "$SSH_USER@$SSH_HOST" "sha256sum '$REMOTE_PATH/$f' 2>/dev/null | cut -d' ' -f1")
+            if [ "$local_sum" = "$remote_sum" ]; then
+              echo "OK       $f"
+            else
+              echo "::error::MISMATCH $f (remote: ${remote_sum:-missing})"
+              status=1
+            fi
+          done
+          exit $status
