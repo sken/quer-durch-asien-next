@@ -296,3 +296,15 @@ img { max-width: 100%; }
 .page-numbers { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; font-weight: 400; }
 .page-numbers [aria-current="page"] { font-weight: 700; color: var(--red); }
 
+/* ---------- packing list, legal pages ---------- */
+.packing { columns: 3 300px; column-gap: 20px; }
+.packing .sheet { break-inside: avoid; margin-bottom: 20px; }
+.packing h2 { font-size: 18px; margin: 0 0 10px; }
+.packing ul { margin: 0; padding-left: 1.2em; }
+.packing li { margin: 2px 0; }
+.legal { max-width: 860px; display: flex; flex-direction: column; gap: 10px; }
+.legal h2 { font-size: 20px; margin: 14px 0 0; }
+.legal h2:first-child { margin-top: 0; }
+.legal p { margin: 0; max-width: 75ch; }
+.contact-block { font-style: normal; line-height: 1.6; }
+
