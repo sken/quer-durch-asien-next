@@ -182,3 +182,20 @@ function cleanText(s: string | null): string | null {
   const t = s.replace(/\r/g, "").replace(/\s*\n\s*/g, " ").trim();
   return t || null;
 }
+
+/** 28 photos per keyword page, as on the old site, so /seite/N stays the same. */
+export const KEYWORD_PAGE_SIZE = 28;
+
+export function getKeyword(slug: string): Keyword | undefined {
+  return getKeywords().find((k) => k.slug === slug);
+}
+
+/** A keyword's photos in travel order. */
+export function photosOfKeyword(k: Keyword): Photo[] {
+  const ids = new Set(k.images);
+  return getPhotos().filter((p) => ids.has(p.id));
+}
+
+export function keywordPages(k: Keyword): number {
+  return Math.max(1, Math.ceil(k.images.length / KEYWORD_PAGE_SIZE));
+}
