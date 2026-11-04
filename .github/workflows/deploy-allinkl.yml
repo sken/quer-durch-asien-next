@@ -6,6 +6,8 @@
 #   SSH_KNOWN_HOSTS  - as in the legacy repo
 #   SSH_REMOTE_PATH  - the folder of next.quer-durch-asien.de, the real path
 #                      under /www/htdocs/<account>/ (the SSH account is chrooted)
+#   IMPRESSUM        - name, postal address, e-mail for Impressum/Datenschutz,
+#                      one per line
 # The path stays in secrets: this repository is public.
 
 name: Deploy to All-Inkl
@@ -44,14 +46,22 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - name: Build the static site
+        env:
+          # Name, postal address and e-mail for Impressum and Datenschutz
+          # (one per line); kept out of this public repository.
+          IMPRESSUM: ${{ secrets.IMPRESSUM }}
         run: pnpm --filter web build
 
       - name: Check the build output
         working-directory: apps/web/out
         run: |
-          for f in index.html 404.html .htaccess "$MARKER" bild/IMG_3730/index.html album/farben/index.html; do
+          for f in index.html 404.html .htaccess "$MARKER" bild/IMG_3730/index.html album/farben/index.html impressum/index.html datenschutz/index.html; do
             test -s "$f" || { echo "::error::missing in build output: $f"; exit 1; }
           done
+          # never publish an Impressum without the owner's contact details
+          if grep -q "Kontaktangaben werden beim" impressum/index.html datenschutz/index.html; then
+            echo "::error::repository secret IMPRESSUM is missing: Impressum would have no contact details"; exit 1
+          fi
           echo "$(find . -type f | wc -l) files, $(du -sh --apparent-size . | cut -f1)"
 
       - name: Check the secrets

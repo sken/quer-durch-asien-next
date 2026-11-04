@@ -5,8 +5,9 @@ the code and in the browser. This is the factual basis for the privacy
 statement; the legal text itself should come from a trusted generator or a
 lawyer. Keep this file in sync when the site changes.
 
-*Status: after "Karte anzeigen" and GeoNames-at-build-time (PR "Photo page
-without third-party requests"). Checked 2026-11-03.*
+*Status: after "Karte anzeigen" and GeoNames-at-build-time, plus the route
+page (map on click, too). Checked 2026-11-04. The statement on `/datenschutz/`
+is written from these facts.*
 
 ## What a visitor's browser loads
 
@@ -14,7 +15,7 @@ without third-party requests"). Checked 2026-11-03.*
 |---|---|---|---|
 | Pages, scripts, styles, fonts, site graphics | the site's own host | every visit | IP address, user agent, requested URL (normal web server logs) |
 | Photos | `quer-durch-asien.de` (legacy server, same owner) | every page with photos | IP address, user agent, referrer |
-| Map tiles (photo pages) | `tile.openstreetmap.org` (OpenStreetMap Foundation, UK) | **only after clicking "Karte anzeigen"** | IP address, user agent, referrer |
+| Map tiles (photo pages, route page `/unsere-reise/`) | `tile.openstreetmap.org` (OpenStreetMap Foundation, UK) | **only after clicking "Karte anzeigen"** | IP address, user agent, referrer |
 
 Not loaded at all:
 
