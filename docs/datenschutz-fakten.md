@@ -30,15 +30,16 @@ Not loaded at all:
 ## Cookies and storage
 
 - The site sets **no cookies** and uses no `localStorage`/`sessionStorage`.
-- Vercel preview deployments use a login cookie, but only for the owner
-  viewing protected previews, not for visitors of the production site.
 
 ## Hosting
 
-| Phase | Host | Location | Notes |
+| Site | Host | Location | Notes |
 |---|---|---|---|
-| now (`next.quer-durch-asien.de`) | Vercel Inc. | USA (build and edge network) | request logs kept by Vercel; check Vercel's DPA and data-transfer terms |
-| after cutover (`quer-durch-asien.de`) | ALL-INKL.COM (Neue Medien Münnich) | Germany | web server logs, retention per hosting settings |
+| `next.quer-durch-asien.de` (since 2026-11-04) and, after cutover, `quer-durch-asien.de` | ALL-INKL.COM (Neue Medien Münnich) | Germany | web server logs, retention per hosting settings (KAS); no US provider involved in serving the site |
+
+The site was first served by Vercel Inc. (USA) until 2026-11-03; it is no
+longer used for hosting. The build runs on GitHub Actions (GitHub Inc., USA),
+which handles the source code only, not visitor data.
 
 ## Content with personal data
 
