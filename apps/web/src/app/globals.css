@@ -278,3 +278,14 @@ img { max-width: 100%; }
 .entry-body ul { padding-left: 1.4em; }
 .entry-body a { overflow-wrap: anywhere; }
 
+/* ---------- route ---------- */
+.route-text p { margin: 0 0 0.7em; max-width: 80ch; }
+.route-text p:last-child { margin-bottom: 0; }
+.route-map { width: 100%; height: min(70vh, 560px); border-radius: 10px; overflow: hidden; background: #e8ecef; z-index: 0; }
+.route-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; }
+.route-legend li { display: inline-flex; align-items: center; gap: 8px; }
+.route-country { font-size: 18px; color: var(--ink); padding-left: 10px; border-left: 6px solid; margin: 0 0 12px; }
+.route-days { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px 24px; }
+.route-days li { display: flex; gap: 12px; align-items: baseline; font-size: 15px; }
+.route-days .when { color: var(--muted); min-width: 108px; }
+
