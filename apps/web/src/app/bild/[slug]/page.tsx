@@ -78,7 +78,7 @@ export default async function PhotoPage({ params }: { params: Promise<{ slug: st
             <div>
               <h3>Stichworte</h3>
               <div className="pills">
-                {keywords.map((k) => <span key={k.id} className="pill">{k.name}</span>)}
+                {keywords.map((k) => <Link key={k.id} href={`/album/stichworte/${k.slug}/`} className="pill">{k.name}</Link>)}
               </div>
             </div>
           ) : null}

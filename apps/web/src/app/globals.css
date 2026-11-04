@@ -289,3 +289,10 @@ img { max-width: 100%; }
 .route-days li { display: flex; gap: 12px; align-items: baseline; font-size: 15px; }
 .route-days .when { color: var(--muted); min-width: 108px; }
 
+/* ---------- keywords ---------- */
+.keyword-index { display: flex; flex-direction: column; gap: 18px; }
+.keyword-index h2 { font-size: 18px; margin: 0 0 8px; color: var(--muted); }
+.pill .count { font-size: 13px; color: rgba(255, 255, 255, 0.82); margin-left: 4px; }
+.page-numbers { display: flex; flex-wrap: wrap; gap: 4px 10px; justify-content: center; font-weight: 400; }
+.page-numbers [aria-current="page"] { font-weight: 700; color: var(--red); }
+

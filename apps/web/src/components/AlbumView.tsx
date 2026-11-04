@@ -5,12 +5,13 @@ import { dayMonth, longDate, num, time } from "@/lib/format";
 
 const FIRST_BATCH = 24;
 
-export function AlbumFilters({ current }: { current: "land" | "farben" }) {
+export function AlbumFilters({ current }: { current: "land" | "farben" | "stichworte" }) {
   return (
     <div className="pills">
       <span className="muted" style={{ fontSize: 15 }}>Bilder nach</span>
       <Link href="/bilder/russland/" className="pill" aria-current={current === "land" ? "page" : undefined}>Land &amp; Tag</Link>
       <Link href="/album/farben/" className="pill" aria-current={current === "farben" ? "page" : undefined}>Farben</Link>
+      <Link href="/album/stichworte/" className="pill" aria-current={current === "stichworte" ? "page" : undefined}>Stichworte</Link>
     </div>
   );
 }
