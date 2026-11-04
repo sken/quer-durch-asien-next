@@ -13,6 +13,7 @@ changes made here by hand would be lost.
 | `data/route.geojson` | GPS track, one simplified line per day |
 | `data/days.json` | the 46 day galleries |
 | `data/export-info.json` | counts of the last export |
+| `data/places.json` | per photo id: nearby places and Wikipedia articles from GeoNames (CC BY 4.0), with distances; written by `tools/export/geonames-places.mjs` |
 | `../content/tagebuch/*.md` | 46 diary entries |
 | `../content/blog/*.md` | 68 blog posts, with `legacyUrl` for redirects |
 

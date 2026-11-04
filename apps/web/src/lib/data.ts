@@ -144,6 +144,26 @@ interface RouteFeature {
   properties: { day: string; country: string };
   geometry: { coordinates: [number, number][] };
 }
+export interface Places {
+  /** [name, km from the photo] */
+  near: [string, number][];
+  /** [title, km from the photo, url without protocol] */
+  wiki: [string, number, string][];
+}
+
+let placesCache: Record<string, Places> | null = null;
+/**
+ * Nearby places and Wikipedia articles from GeoNames, fetched once at export
+ * time (tools/export/geonames-places.mjs), so visitors' browsers never
+ * contact GeoNames. Empty when places.json has not been generated.
+ */
+export function placesOf(photoId: number): Places | null {
+  if (!placesCache) {
+    placesCache = fs.existsSync(path.join(DATA_DIR, "places.json")) ? readJson<Record<string, Places>>("places.json") : {};
+  }
+  return placesCache[String(photoId)] ?? null;
+}
+
 let routeCache: RouteFeature[] | null = null;
 /** The GPS track of one day as [lat, lng] pairs (Leaflet order). */
 export function routeOfDay(day: string): [number, number][] {
