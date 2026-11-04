@@ -4,23 +4,29 @@ The new, static version of quer-durch-asien.de. The plan and the reasoning
 live in the legacy repo: `docs/new-setup.md` and `docs/migration-blog.md` in
 [`sken/quer-durch-asien`](https://github.com/sken/quer-durch-asien).
 
-## Deploy: Vercel, through its Git integration
+## Deploy: All-Inkl, by rsync over SSH
 
-There is no deploy workflow file; Vercel builds this repo (Turborepo,
-`turbo.json`) as two projects:
-
-| Vercel project | Folder | Production |
-|---|---|---|
-| `quer-durch-asien-next-web` | `apps/web` | `next.quer-durch-asien.de` |
-| `quer-durch-asien-api` | `apps/api` | being retired: the site goes static |
+`.github/workflows/deploy-allinkl.yml` builds `apps/web` (static export) and
+uploads `apps/web/out` to the folder of `next.quer-durch-asien.de` on
+All-Inkl, then compares checksums of key files.
 
 - **A merge to `main` is a production deploy.** Treat `main` as production:
   no direct pushes or experiments there.
-- **Every other branch gets a preview deployment** (behind Vercel login).
-  That preview is the test environment: a PR is ready for review only when
-  its preview builds succeed (visible as commit statuses on the PR).
-- After a merge, check the production deployments and the affected pages on
+- Server path, host and SSH key are repository secrets (this repo is
+  public; never write the account or path into tracked files).
+- The workflow syncs with `--delete` only into a folder that holds the
+  marker file `.qda-next-site` from an earlier deploy; a first deploy needs
+  an empty folder, and a folder with the legacy PHP site is refused.
+- Server config lives in `apps/web/public/.htaccess` (404 page, caching,
+  headers). Test changes to it with a local Apache before merging.
+- There are no preview deployments: test locally (`pnpm --filter web build`,
+  serve `apps/web/out`, Playwright) and say so in the PR.
+- After a merge, check the workflow run and the affected pages on
   `next.quer-durch-asien.de`.
+
+Vercel (projects `quer-durch-asien-next-web`, `quer-durch-asien-api`) was the
+first host; its account was disabled on 2026-11-03 (HTTP 402). Its Git
+integration can be disconnected once the domain points to All-Inkl.
 
 ## Git workflow: PRs are squash-merged
 

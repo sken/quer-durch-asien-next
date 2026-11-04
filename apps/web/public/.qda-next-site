@@ -1,0 +1,3 @@
+Marks the deploy folder of quer-durch-asien-next. The All-Inkl deploy
+workflow (.github/workflows/deploy-allinkl.yml) only syncs with --delete into
+a folder that contains this file.
